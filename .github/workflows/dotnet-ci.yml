@@ -50,7 +50,7 @@ jobs:
 
     # 7️⃣ Upload artifacts (opcional, para debug)
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: nuget-packages
         path: ./artifacts
