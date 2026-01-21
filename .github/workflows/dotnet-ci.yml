@@ -11,53 +11,55 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1️⃣ Checkout do código
-    - name: Checkout
-      uses: actions/checkout@v3
+      # 1️⃣ Checkout do código
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    # 2️⃣ Configurar .NET
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '10.0.x'
+      # 2️⃣ Configurar .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.0.x'
 
-    # 3️⃣ Restaurar pacotes
-    - name: Restore
-      run: dotnet restore
+      # 3️⃣ Restaurar pacotes
+      - name: Restore
+        run: dotnet restore
 
-    # 4️⃣ Build
-    - name: Build
-      run: dotnet build --no-restore --configuration Release
+      # 4️⃣ Build
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
 
-    # 5️⃣ Rodar testes e coletar cobertura
-    - name: Test
-      run: |
-        dotnet test \
-          --no-build \
-          --configuration Release \
-          --collect:"XPlat Code Coverage" \
-          --results-directory ./TestResults
-      continue-on-error: false
+      # 5️⃣ Rodar testes com cobertura Cobertura XML
+      - name: Test
+        run: |
+          dotnet test \
+            --no-build \
+            --configuration Release \
+            /p:CollectCoverage=true \
+            /p:CoverletOutput=./TestResults/coverage.xml \
+            /p:CoverletOutputFormat=cobertura
+        continue-on-error: false
 
-    # 6️⃣ Publicar pacote NuGet se branch main
-    - name: Pack
-      if: github.ref == 'refs/heads/main'
-      run: |
-        dotnet pack src/Cms.BuildingBlocks.Domain/Cms.BuildingBlocks.Domain.csproj \
-          --no-build \
-          --configuration Release \
-          --output ./artifacts
+      # 6️⃣ Publicar pacote NuGet se branch main
+      - name: Pack
+        if: github.ref == 'refs/heads/main'
+        run: |
+          dotnet pack src/Cms.BuildingBlocks.Domain/Cms.BuildingBlocks.Domain.csproj \
+            --no-build \
+            --configuration Release \
+            --output ./artifacts
 
-    # 7️⃣ Upload artifacts (opcional, para debug)
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: nuget-packages
-        path: ./artifacts
+      # 7️⃣ Upload artifacts do NuGet (opcional)
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./artifacts
 
-    # 8️⃣ Report cobertura (opcional com Codecov)
-    - name: Upload Coverage
-      if: always()
-      uses: codecov/codecov-action@v3
-      with:
-        files: ./TestResults/**/coverage.cobertura.xml
+      # 8️⃣ Upload cobertura para Codecov
+      - name: Upload Coverage
+        if: always()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./TestResults/coverage.xml
+          fail_ci_if_error: true
