@@ -5,6 +5,15 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      threshold:
+        description: 'Cobertura mínima de linhas'
+        required: false
+        default: '80'
+
+env:
+  COVERLET_THRESHOLD: ${{ github.event.inputs.threshold }}
 
 jobs:
   build:
@@ -25,33 +34,27 @@ jobs:
       - name: Restore
         run: dotnet restore
 
-      # 4️⃣ Build com analisadores
+      # 4️⃣ Build
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      # 5️⃣ Testes com cobertura e threshold mínimo
+      # 5️⃣ Testes com cobertura
       - name: Test
         run: |
+          mkdir -p ./TestResults
           dotnet test tests/Cms.BuildingBlocks.Domain.Tests/Cms.BuildingBlocks.Domain.Tests.csproj \
             --no-build \
             --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutput=./TestResults/coverage.xml \
             /p:CoverletOutputFormat=cobertura \
-            /p:CoverletThreshold=80 \
+            /p:CoverletThreshold=$COVERLET_THRESHOLD \
             /p:CoverletThresholdType=line \
             /p:CoverletFailWhenBelowThreshold=true
 
-      # 6️⃣ Preparar arquivo de cobertura para Codecov
-      - name: Prepare Coverage
-        run: |
-          mkdir -p ./TestResults/merged
-          if [ -f ./TestResults/coverage.xml ]; then
-            cp ./TestResults/coverage.xml ./TestResults/merged/coverage.xml
-          else
-            echo "No coverage file found!"
-            touch ./TestResults/merged/coverage.xml
-          fi
+      # 6️⃣ Verificar arquivo de cobertura
+      - name: List TestResults
+        run: ls -R ./TestResults
 
       # 7️⃣ Pack NuGet (somente main)
       - name: Pack NuGet
@@ -80,7 +83,7 @@ jobs:
             echo "No coverage report found or empty."
           fi
 
-      # 🔟 Optional: Badge coverage (gera badge HTML/Markdown)
+      # 🔟 Badge de cobertura
       - name: Generate Coverage Badge
         if: always()
         run: |
