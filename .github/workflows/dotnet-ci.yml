@@ -142,3 +142,16 @@ jobs:
         with:
           name: nuget-packages
           path: ./artifacts
+
+      - name: Push NuGet
+        run: |
+          if [[ "${GITHUB_REF}" == refs/heads/main || "${GITHUB_REF}" == refs/tags/v* ]]; then
+            dotnet nuget push ./artifacts/*.nupkg \
+              --source https://api.nuget.org/v3/index.json \
+              --api-key ${{ secrets.NUGET_API_KEY }}
+          elif [[ "${GITHUB_REF}" == refs/heads/develop ]]; then
+            dotnet nuget push ./artifacts/*.nupkg \
+              --source https://api.nuget.org/v3/index.json \
+              --api-key ${{ secrets.NUGET_API_KEY }} \
+              --skip-duplicate
+          fi

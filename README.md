@@ -3,14 +3,9 @@
 ## Badges
 
 ### Main (Release)
-![Build Main](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/ci.yml/badge.svg?branch=main)
+[![CI/CD](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/dotnet-ci.yml/badge.svg)](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/dotnet-ci.yml)
 ![Coverage Main](https://codecov.io/gh/cmssantos/buildingblocks-domain/branch/main/graph/badge.svg)
 ![NuGet](https://img.shields.io/nuget/v/Cms.BuildingBlocks.Domain.svg)
-
-### Develop (Pré-release)
-![Build Develop](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/ci.yml/badge.svg?branch=develop)
-![Coverage Develop](https://codecov.io/gh/cmssantos/buildingblocks-domain/branch/develop/graph/badge.svg)
-![NuGet Beta](https://img.shields.io/nuget/vpre/Cms.BuildingBlocks.Domain.svg)
 
 ---
 
