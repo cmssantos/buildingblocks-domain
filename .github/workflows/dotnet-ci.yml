@@ -1,3 +1,5 @@
+![Build](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/ci.yml/badge.svg)
+
 name: CI
 
 on:
@@ -109,10 +111,3 @@ jobs:
           else
             echo "No coverage report found or empty."
           fi
-
-      # 1️⃣2️⃣ Generate Coverage Badge
-      - name: Generate Coverage Badge
-        if: always()
-        run: |
-          echo "Codecov badge URL:"
-          echo "![Coverage](https://codecov.io/gh/${{ github.repository }}/branch/main/graph/badge.svg)"

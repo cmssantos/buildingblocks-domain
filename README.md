@@ -1,7 +1,7 @@
 # Cms.BuildingBlocks.Domain
 
-![Build](https://github.com/cleudice/Cms.BuildingBlocks.Domain/actions/workflows/ci.yml/badge.svg)
-![Coverage](https://codecov.io/gh/cleudice/Cms.BuildingBlocks.Domain/branch/main/graph/badge.svg)
+![Build](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/ci.yml/badge.svg)
+![Coverage](https://codecov.io/gh/cmssantos/buildingblocks-domain/branch/main/graph/badge.svg)
 ![NuGet](https://img.shields.io/nuget/v/Cms.BuildingBlocks.Domain)
 
 Core **Domain Building Blocks** for .NET applications following **Clean Architecture**, **SOLID**, and **Domain-Driven Design (DDD)** principles.
