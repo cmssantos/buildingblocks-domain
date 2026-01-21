@@ -28,7 +28,7 @@ jobs:
       - name: Restore
         run: dotnet restore
 
-      # 4️⃣ Build
+      # 4️⃣ Build do target atual da matrix
       - name: Build
         run: dotnet build --no-restore --configuration Release -f ${{ matrix.target-framework }}
 
@@ -40,21 +40,24 @@ jobs:
             /p:CoverletOutput=./TestResults/coverage-${{ matrix.target-framework }}.xml \
             /p:CoverletOutputFormat=cobertura
 
-      # 6️⃣ Merge cobertura (só no net10.0 para evitar duplicação)
+      # 6️⃣ Merge cobertura (só no net10.0)
       - name: Merge Coverage
         if: matrix.target-framework == 'net10.0'
         run: |
           dotnet tool install --global coverlet.console --version 3.2.0
           mkdir -p ./TestResults/merged
-          coverlet merge ./TestResults/coverage-net8.0.xml ./TestResults/coverage-net10.0.xml --output ./TestResults/merged/coverage.xml --format cobertura || echo "No coverage to merge"
+          # Merge dos arquivos gerados por net8.0 e net10.0
+          coverlet merge ./TestResults/coverage-net8.0.xml ./TestResults/coverage-net10.0.xml \
+            --output ./TestResults/merged/coverage.xml --format cobertura || echo "No coverage to merge"
 
-      # 7️⃣ Pack NuGet (somente net10.0)
+      # 7️⃣ Pack NuGet (somente net10.0, sem rebuild)
       - name: Pack
         if: github.ref == 'refs/heads/main' && matrix.target-framework == 'net10.0'
         run: |
           dotnet pack src/Cms.BuildingBlocks.Domain/Cms.BuildingBlocks.Domain.csproj \
             --configuration Release \
             --output ./artifacts \
+            --no-build \
             /p:TargetFramework=net10.0
 
       # 8️⃣ Upload artifacts do pacote
