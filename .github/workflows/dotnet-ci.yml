@@ -101,11 +101,11 @@ jobs:
         id: version
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}   # Release oficial
+            VERSION=${GITHUB_REF#refs/tags/}
           elif [[ "${GITHUB_REF}" == refs/heads/develop ]]; then
-            VERSION=1.0.$(date +%Y%m%d)-beta     # Pré-release develop
+            VERSION=1.0.$(date +%Y%m%d)-beta
           else
-            VERSION=1.0.$(date +%Y%m%d)-alpha    # Feature / hotfix
+            VERSION=1.0.$(date +%Y%m%d)-alpha
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Using VERSION=$VERSION"
