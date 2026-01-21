@@ -46,9 +46,11 @@ jobs:
       # 6️⃣ Preparar arquivo de cobertura fixo
       - name: Prepare Coverage
         run: |
+          TEST_RESULTS_DIR=tests/Cms.BuildingBlocks.Domain.Tests/TestResults
+          COVERAGE_FILE=$(find "$TEST_RESULTS_DIR" -type f -name "*.cobertura.xml" | head -n 1)
+
           mkdir -p ./TestResults
-          # Procura qualquer cobertura gerada dentro de subpastas do TestResults
-          COVERAGE_FILE=$(find ./TestResults -type f -name "*.cobertura.xml" | head -n 1)
+
           if [ -f "$COVERAGE_FILE" ]; then
             cp "$COVERAGE_FILE" ./TestResults/coverage.xml
             echo "Coverage file prepared at ./TestResults/coverage.xml"
