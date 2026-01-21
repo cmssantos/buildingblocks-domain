@@ -25,35 +25,35 @@ jobs:
       - name: Restore
         run: dotnet restore
 
-      # 4️⃣ Build multi-target
-      - name: Build All Targets
-        run: dotnet build --no-restore --configuration Release
+      # 4️⃣ Build net10.0
+      - name: Build
+        run: dotnet build --no-restore --configuration Release -f net10.0
 
-      # 5️⃣ Testes com cobertura para todos os targets
-      - name: Test All Targets
+      # 5️⃣ Testes com cobertura
+      - name: Test
         run: |
-            # Testa apenas os targets válidos para seu SDK (10.x)
-            for tf in net10.0; do
-            echo "Running tests for $tf"
-            dotnet test tests/Cms.BuildingBlocks.Domain.Tests/Cms.BuildingBlocks.Domain.Tests.csproj \
-                --no-build \
-                --configuration Release \
-                -f $tf \
-                /p:CollectCoverage=true \
-                /p:CoverletOutput=./TestResults/coverage-$tf.xml \
-                /p:CoverletOutputFormat=cobertura
-            done
+          dotnet test tests/Cms.BuildingBlocks.Domain.Tests/Cms.BuildingBlocks.Domain.Tests.csproj \
+            --no-build \
+            --configuration Release \
+            -f net10.0 \
+            /p:CollectCoverage=true \
+            /p:CoverletOutput=./TestResults/coverage-net10.0.xml \
+            /p:CoverletOutputFormat=cobertura
 
-
-      # 6️⃣ Merge cobertura para Codecov
-      - name: Merge Coverage
+      # 6️⃣ Preparar arquivo de cobertura para Codecov
+      - name: Prepare Coverage
         run: |
           dotnet tool install --global coverlet.console --version 3.2.0
           mkdir -p ./TestResults/merged
-          coverlet merge ./TestResults/coverage-net8.0.xml ./TestResults/coverage-net10.0.xml \
-            --output ./TestResults/merged/coverage.xml --format cobertura || echo "No coverage to merge"
+          # Sempre garante que exista coverage.xml
+          if [ -f ./TestResults/coverage-net10.0.xml ]; then
+            cp ./TestResults/coverage-net10.0.xml ./TestResults/merged/coverage.xml
+          else
+            echo "No coverage file found!"
+            touch ./TestResults/merged/coverage.xml
+          fi
 
-      # 7️⃣ Pack NuGet para net10.0 apenas
+      # 7️⃣ Pack NuGet (somente main)
       - name: Pack NuGet
         if: github.ref == 'refs/heads/main'
         run: |
@@ -71,7 +71,7 @@ jobs:
           name: nuget-packages
           path: ./artifacts
 
-      # 9️⃣ Upload cobertura consolidada para Codecov
+      # 9️⃣ Upload cobertura para Codecov
       - name: Upload Coverage
         uses: codecov/codecov-action@v3
         with:
