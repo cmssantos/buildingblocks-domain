@@ -47,10 +47,12 @@ jobs:
       - name: Prepare Coverage
         run: |
           mkdir -p ./TestResults
-          COVERAGE_FILE=$(find ./TestResults -type f -name "coverage.cobertura.xml" | head -n 1)
+          # Procura qualquer cobertura gerada dentro de subpastas do TestResults
+          COVERAGE_FILE=$(find ./TestResults -type f -name "*.cobertura.xml" | head -n 1)
           if [ -f "$COVERAGE_FILE" ]; then
             cp "$COVERAGE_FILE" ./TestResults/coverage.xml
             echo "Coverage file prepared at ./TestResults/coverage.xml"
+            echo "Found file: $COVERAGE_FILE"
           else
             echo "No coverage file found!"
             touch ./TestResults/coverage.xml
@@ -59,7 +61,7 @@ jobs:
       # 7️⃣ Optional: alertar se cobertura abaixo do mínimo
       - name: Check Coverage Threshold
         run: |
-          COVERAGE_PERCENT=$(grep '<coverage line-rate="' ./TestResults/coverage.xml | sed -E 's/.*line-rate="([0-9.]+)".*/\1/' | head -n1)
+          COVERAGE_PERCENT=$(grep -oP 'line-rate="\K[0-9.]+' ./TestResults/coverage.xml | head -n1)
           if [ -z "$COVERAGE_PERCENT" ]; then
             echo "Could not determine coverage percentage!"
             exit 1
@@ -70,6 +72,7 @@ jobs:
             echo "Coverage below minimum threshold ($COVERLET_MIN_THRESHOLD%)!"
             exit 1
           fi
+
 
       # 8️⃣ Pack NuGet (somente main)
       - name: Pack NuGet

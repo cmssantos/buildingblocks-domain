@@ -1,5 +1,9 @@
 # Cms.BuildingBlocks.Domain
 
+![Build](https://github.com/cleudice/Cms.BuildingBlocks.Domain/actions/workflows/ci.yml/badge.svg)
+![Coverage](https://codecov.io/gh/cleudice/Cms.BuildingBlocks.Domain/branch/main/graph/badge.svg)
+![NuGet](https://img.shields.io/nuget/v/Cms.BuildingBlocks.Domain)
+
 Core **Domain Building Blocks** for .NET applications following **Clean Architecture**, **SOLID**, and **Domain-Driven Design (DDD)** principles.
 
 This package provides reusable abstractions and primitives to accelerate the development of rich domain models while keeping the domain layer clean, expressive, and independent from infrastructure concerns.
