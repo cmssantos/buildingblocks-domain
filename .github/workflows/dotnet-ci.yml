@@ -9,48 +9,53 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target-framework: [net8.0, net10.0]
 
     steps:
       # 1️⃣ Checkout do código
       - name: Checkout
         uses: actions/checkout@v3
 
-      # 2️⃣ Configurar .NET
+      # 2️⃣ Setup .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '10.0.x'
 
-      # 3️⃣ Restaurar pacotes
+      # 3️⃣ Restore pacotes
       - name: Restore
         run: dotnet restore
 
-      # 4️⃣ Build
+      # 4️⃣ Build apenas uma vez por target
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build --configuration Release -f ${{ matrix.target-framework }} --no-restore
 
-      # 5️⃣ Rodar testes com cobertura Cobertura XML
+      # 5️⃣ Testes com cobertura (coverlet) por target
       - name: Test
         run: |
           dotnet test \
-            --no-build \
             --configuration Release \
+            -f ${{ matrix.target-framework }} \
+            --no-build \
             /p:CollectCoverage=true \
-            /p:CoverletOutput=./TestResults/coverage.xml \
+            /p:CoverletOutput=./TestResults/coverage-${{ matrix.target-framework }}.xml \
             /p:CoverletOutputFormat=cobertura
         continue-on-error: false
 
-      # 6️⃣ Publicar pacote NuGet se branch main
+      # 6️⃣ Pack NuGet (só no main e net10.0 para evitar duplicação)
       - name: Pack
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && matrix.target-framework == 'net10.0'
         run: |
           dotnet pack src/Cms.BuildingBlocks.Domain/Cms.BuildingBlocks.Domain.csproj \
-            --no-build \
             --configuration Release \
-            --output ./artifacts
+            --output ./artifacts \
+            --no-build
 
-      # 7️⃣ Upload artifacts do NuGet (opcional)
+      # 7️⃣ Upload artifacts do pacote
       - name: Upload artifacts
+        if: matrix.target-framework == 'net10.0'
         uses: actions/upload-artifact@v4
         with:
           name: nuget-packages
@@ -61,5 +66,7 @@ jobs:
         if: always()
         uses: codecov/codecov-action@v3
         with:
-          files: ./TestResults/coverage.xml
+          files: |
+            ./TestResults/coverage-net8.0.xml
+            ./TestResults/coverage-net10.0.xml
           fail_ci_if_error: true
