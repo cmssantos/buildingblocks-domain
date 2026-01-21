@@ -1,22 +1,33 @@
 # Cms.BuildingBlocks.Domain
 
-![Build](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/ci.yml/badge.svg?branch=main)
-![Coverage](https://codecov.io/gh/cmssantos/buildingblocks-domain/branch/main/graph/badge.svg)
+## Badges
+
+### Main (Release)
+![Build Main](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/ci.yml/badge.svg?branch=main)
+![Coverage Main](https://codecov.io/gh/cmssantos/buildingblocks-domain/branch/main/graph/badge.svg)
 ![NuGet](https://img.shields.io/nuget/v/Cms.BuildingBlocks.Domain.svg)
-![NuGet (beta)](https://img.shields.io/nuget/vpre/Cms.BuildingBlocks.Domain.svg)
+
+### Develop (Pré-release)
+![Build Develop](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/ci.yml/badge.svg?branch=develop)
+![Coverage Develop](https://codecov.io/gh/cmssantos/buildingblocks-domain/branch/develop/graph/badge.svg)
+![NuGet Beta](https://img.shields.io/nuget/vpre/Cms.BuildingBlocks.Domain.svg)
+
+---
+
+## Overview
 
 Core **Domain Building Blocks** for .NET applications following **Clean Architecture**, **SOLID**, and **Domain-Driven Design (DDD)** principles.
 
-This package provides reusable abstractions and primitives to accelerate the development of rich domain models while keeping the domain layer clean, expressive, and independent from infrastructure concerns.
+Provides reusable abstractions to accelerate rich domain model development while keeping the domain layer **clean, expressive, and independent** from infrastructure concerns.
 
 ---
 
 ## ✨ Features
 
 - Base abstractions for **Entities**, **Value Objects**, and **Aggregates**
-- **Domain Errors** and Result patterns
+- **Domain Errors** and Result pattern
 - Guard Clauses for invariant protection
-- Strongly-typed IDs
+- Strongly-typed identifiers
 - Fully compatible with **DDD Tactical Patterns**
 - No external dependencies
 - Designed for **high testability**
@@ -24,22 +35,11 @@ This package provides reusable abstractions and primitives to accelerate the dev
 
 ---
 
-## 📦 Target Frameworks
-
-```text
-net8.0
-net10.0
-```
-
-Multi-targeting ensures forward compatibility while remaining stable on LTS runtimes.
-
----
-
 ## 🧱 Architecture Alignment
 
-This package is intended to live in the **Domain layer**:
+This package is intended to be used **only in the Domain layer**:
 
-```text
+```
 Domain
  ├─ Aggregates
  ├─ Entities
@@ -49,7 +49,7 @@ Domain
  └─ Abstractions
 ```
 
-It must **not** depend on:
+Must **not** depend on:
 - Infrastructure
 - EF Core
 - ASP.NET Core
@@ -63,7 +63,7 @@ It must **not** depend on:
 dotnet add package Cms.BuildingBlocks.Domain
 ```
 
-For private feeds:
+For private NuGet feeds:
 
 ```bash
 dotnet nuget add source <URL> -n Cms --username <USER> --password <TOKEN>
@@ -73,26 +73,33 @@ dotnet nuget add source <URL> -n Cms --username <USER> --password <TOKEN>
 
 ## 🧪 Testing
 
-- Tests are multi-targeted (`net8.0`, `net10.0`)
-- Uses standard `.NET test` discovery
-- Deterministic & CI-friendly builds
+- Multi-targeted (`net8.0`, `net10.0`)
+- Deterministic & CI-friendly
+- Run tests:
 
 ```bash
 dotnet test
 ```
 
+- Coverage threshold enforced (80% minimum)
+- Coverage uploaded to **Codecov**
+
 ---
 
-## 🔐 Versioning
+## 🔖 Versioning
 
-- **Semantic Versioning**
-- No breaking changes in PATCH/MINOR
-- MAJOR only when domain contracts change
+- **Semantic Versioning** with automated versioning:
+  - `main` branch → releases (patch increment automatically)
+  - `develop` branch → pre-releases `-beta.N` (continuous)
+  - Git tags → synchronized with NuGet
+- **PATCH** auto-incremented based on last release tag
+- Pre-releases automatically numbered by commits since last tag
 
 Example:
 
 ```xml
-<Version>1.0.0</Version>
+<Version>1.0.3</Version>          <!-- main/release -->
+<Version>1.0.4-beta.2</Version>   <!-- develop/pre-release -->
 ```
 
 ---
@@ -108,4 +115,4 @@ MIT
 > “The Domain Model is the heart of the software.”
 > — Eric Evans
 
-This package exists to keep that heart clean, expressive, and protected.
+This package exists to keep that heart **clean, expressive, and protected**.
