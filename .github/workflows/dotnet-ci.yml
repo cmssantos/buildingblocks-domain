@@ -5,15 +5,9 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
-  workflow_dispatch:
-    inputs:
-      threshold:
-        description: 'Cobertura mínima de linhas'
-        required: false
-        default: '80'
 
 env:
-  COVERLET_THRESHOLD: ${{ github.event.inputs.threshold }}
+  COVERLET_MIN_THRESHOLD: 80
 
 jobs:
   build:
@@ -42,21 +36,42 @@ jobs:
       - name: Test
         run: |
           mkdir -p ./TestResults
+          echo "Running tests with coverage..."
           dotnet test tests/Cms.BuildingBlocks.Domain.Tests/Cms.BuildingBlocks.Domain.Tests.csproj \
             --no-build \
             --configuration Release \
-            /p:CollectCoverage=true \
-            /p:CoverletOutput=./TestResults/coverage.xml \
-            /p:CoverletOutputFormat=cobertura \
-            /p:CoverletThreshold=$COVERLET_THRESHOLD \
-            /p:CoverletThresholdType=line \
-            /p:CoverletFailWhenBelowThreshold=true
+            --collect:"XPlat Code Coverage" \
+            --logger "trx;LogFileName=TestResults/test_results.trx"
 
-      # 6️⃣ Verificar arquivo de cobertura
-      - name: List TestResults
-        run: ls -R ./TestResults
+      # 6️⃣ Preparar arquivo de cobertura fixo
+      - name: Prepare Coverage
+        run: |
+          mkdir -p ./TestResults
+          COVERAGE_FILE=$(find ./TestResults -type f -name "coverage.cobertura.xml" | head -n 1)
+          if [ -f "$COVERAGE_FILE" ]; then
+            cp "$COVERAGE_FILE" ./TestResults/coverage.xml
+            echo "Coverage file prepared at ./TestResults/coverage.xml"
+          else
+            echo "No coverage file found!"
+            touch ./TestResults/coverage.xml
+          fi
 
-      # 7️⃣ Pack NuGet (somente main)
+      # 7️⃣ Optional: alertar se cobertura abaixo do mínimo
+      - name: Check Coverage Threshold
+        run: |
+          COVERAGE_PERCENT=$(grep '<coverage line-rate="' ./TestResults/coverage.xml | sed -E 's/.*line-rate="([0-9.]+)".*/\1/' | head -n1)
+          if [ -z "$COVERAGE_PERCENT" ]; then
+            echo "Could not determine coverage percentage!"
+            exit 1
+          fi
+          COVERAGE_INT=$(echo "$COVERAGE_PERCENT*100/1" | bc)
+          echo "Coverage: $COVERAGE_INT%"
+          if [ "$COVERAGE_INT" -lt $COVERLET_MIN_THRESHOLD ]; then
+            echo "Coverage below minimum threshold ($COVERLET_MIN_THRESHOLD%)!"
+            exit 1
+          fi
+
+      # 8️⃣ Pack NuGet (somente main)
       - name: Pack NuGet
         if: github.ref == 'refs/heads/main'
         run: |
@@ -65,7 +80,7 @@ jobs:
             --output ./artifacts \
             --no-build
 
-      # 8️⃣ Upload artifacts do pacote
+      # 9️⃣ Upload artifacts do pacote
       - name: Upload NuGet Artifacts
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
@@ -73,17 +88,17 @@ jobs:
           name: nuget-packages
           path: ./artifacts
 
-      # 9️⃣ Upload cobertura para Codecov
+      # 🔟 Upload cobertura para Codecov
       - name: Upload Coverage
         run: |
           if [ -f ./TestResults/coverage.xml ] && [ -s ./TestResults/coverage.xml ]; then
-            echo "Uploading coverage..."
+            echo "Uploading coverage to Codecov..."
             codecov -f ./TestResults/coverage.xml -t ${{ secrets.CODECOV_TOKEN }}
           else
             echo "No coverage report found or empty."
           fi
 
-      # 🔟 Badge de cobertura
+      # 1️⃣1️⃣ Badge de cobertura
       - name: Generate Coverage Badge
         if: always()
         run: |
