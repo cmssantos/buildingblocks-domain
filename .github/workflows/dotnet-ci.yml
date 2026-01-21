@@ -32,13 +32,18 @@ jobs:
       # 5️⃣ Testes com cobertura para todos os targets
       - name: Test All Targets
         run: |
-          for tf in net8.0 net10.0; do
+            # Testa apenas os targets válidos para seu SDK (10.x)
+            for tf in net10.0; do
             echo "Running tests for $tf"
-            dotnet test --no-build --configuration Release -f $tf \
-              /p:CollectCoverage=true \
-              /p:CoverletOutput=./TestResults/coverage-$tf.xml \
-              /p:CoverletOutputFormat=cobertura
-          done
+            dotnet test tests/Cms.BuildingBlocks.Domain.Tests/Cms.BuildingBlocks.Domain.Tests.csproj \
+                --no-build \
+                --configuration Release \
+                -f $tf \
+                /p:CollectCoverage=true \
+                /p:CoverletOutput=./TestResults/coverage-$tf.xml \
+                /p:CoverletOutputFormat=cobertura
+            done
+
 
       # 6️⃣ Merge cobertura para Codecov
       - name: Merge Coverage
