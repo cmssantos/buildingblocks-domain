@@ -73,12 +73,12 @@ jobs:
       # 9️⃣ Upload cobertura para Codecov
       - name: Upload Coverage
         run: |
-            if [ -f ./TestResults/coverage.xml ] && [ -s ./TestResults/coverage.xml ]; then
+          if [ -f ./TestResults/coverage.xml ] && [ -s ./TestResults/coverage.xml ]; then
             echo "Uploading coverage..."
             codecov -f ./TestResults/coverage.xml -t ${{ secrets.CODECOV_TOKEN }}
-            else
+          else
             echo "No coverage report found or empty."
-            fi
+          fi
 
       # 🔟 Optional: Badge coverage (gera badge HTML/Markdown)
       - name: Generate Coverage Badge
