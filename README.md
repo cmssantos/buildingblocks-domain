@@ -1,6 +1,6 @@
 # Cms.BuildingBlocks.Domain
 
-![Build](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/dotnet-ci.yml/badge.svg?branch=main)](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/dotnet-ci.yml)
 ![Coverage](https://codecov.io/gh/cmssantos/buildingblocks-domain/branch/main/graph/badge.svg)
 ![NuGet](https://img.shields.io/nuget/v/Cms.BuildingBlocks.Domain)
 
