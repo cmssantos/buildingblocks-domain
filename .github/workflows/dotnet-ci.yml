@@ -21,9 +21,9 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
-    # 3️⃣ Restaurar pacotes com NuGet.Config
+    # 3️⃣ Restaurar pacotes
     - name: Restore
-      run: dotnet restore --configfile NuGet.Config
+      run: dotnet restore
 
     # 4️⃣ Build
     - name: Build
