@@ -1,4 +1,3 @@
-
 name: CI
 
 on:
@@ -26,11 +25,11 @@ jobs:
       - name: Restore
         run: dotnet restore
 
-      # 4️⃣ Build
+      # 4️⃣ Build com analisadores
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      # 5️⃣ Testes com cobertura
+      # 5️⃣ Testes com cobertura e threshold mínimo
       - name: Test
         run: |
           dotnet test tests/Cms.BuildingBlocks.Domain.Tests/Cms.BuildingBlocks.Domain.Tests.csproj \
@@ -38,7 +37,10 @@ jobs:
             --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutput=./TestResults/coverage.xml \
-            /p:CoverletOutputFormat=cobertura
+            /p:CoverletOutputFormat=cobertura \
+            /p:CoverletThreshold=80 \
+            /p:CoverletThresholdType=line \
+            /p:CoverletFailWhenBelowThreshold=true
 
       # 6️⃣ Preparar arquivo de cobertura para Codecov
       - name: Prepare Coverage
@@ -76,3 +78,10 @@ jobs:
           fail_ci_if_error: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      # 🔟 Optional: Badge coverage (gera badge HTML/Markdown)
+      - name: Generate Coverage Badge
+        if: always()
+        run: |
+          echo "Codecov badge URL:"
+          echo "![Coverage](https://codecov.io/gh/${{ github.repository }}/branch/main/graph/badge.svg)"
