@@ -24,36 +24,40 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      # 3️⃣ Restore pacotes
+      # 3️⃣ Restaurar pacotes
       - name: Restore
         run: dotnet restore
 
-      # 4️⃣ Build apenas uma vez por target
+      # 4️⃣ Build
       - name: Build
-        run: dotnet build --configuration Release -f ${{ matrix.target-framework }} --no-restore
+        run: dotnet build --no-restore --configuration Release -f ${{ matrix.target-framework }}
 
-      # 5️⃣ Testes com cobertura (coverlet) por target
+      # 5️⃣ Testes com cobertura separada
       - name: Test
         run: |
-          dotnet test \
-            --configuration Release \
-            -f ${{ matrix.target-framework }} \
-            --no-build \
+          dotnet test --no-build --configuration Release -f ${{ matrix.target-framework }} \
             /p:CollectCoverage=true \
             /p:CoverletOutput=./TestResults/coverage-${{ matrix.target-framework }}.xml \
             /p:CoverletOutputFormat=cobertura
-        continue-on-error: false
 
-      # 6️⃣ Pack NuGet (só no main e net10.0 para evitar duplicação)
+      # 6️⃣ Merge cobertura (só no net10.0 para evitar duplicação)
+      - name: Merge Coverage
+        if: matrix.target-framework == 'net10.0'
+        run: |
+          dotnet tool install --global coverlet.console --version 3.2.0
+          mkdir -p ./TestResults/merged
+          coverlet merge ./TestResults/coverage-net8.0.xml ./TestResults/coverage-net10.0.xml --output ./TestResults/merged/coverage.xml --format cobertura || echo "No coverage to merge"
+
+      # 7️⃣ Pack NuGet (somente net10.0)
       - name: Pack
         if: github.ref == 'refs/heads/main' && matrix.target-framework == 'net10.0'
         run: |
           dotnet pack src/Cms.BuildingBlocks.Domain/Cms.BuildingBlocks.Domain.csproj \
             --configuration Release \
             --output ./artifacts \
-            --no-build
+            -f net10.0
 
-      # 7️⃣ Upload artifacts do pacote
+      # 8️⃣ Upload artifacts do pacote
       - name: Upload artifacts
         if: matrix.target-framework == 'net10.0'
         uses: actions/upload-artifact@v4
@@ -61,12 +65,10 @@ jobs:
           name: nuget-packages
           path: ./artifacts
 
-      # 8️⃣ Upload cobertura para Codecov
+      # 9️⃣ Upload cobertura consolidada para Codecov
       - name: Upload Coverage
-        if: always()
+        if: matrix.target-framework == 'net10.0'
         uses: codecov/codecov-action@v3
         with:
-          files: |
-            ./TestResults/coverage-net8.0.xml
-            ./TestResults/coverage-net10.0.xml
+          files: ./TestResults/merged/coverage.xml
           fail_ci_if_error: true
