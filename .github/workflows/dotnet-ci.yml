@@ -9,9 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target-framework: [net8.0, net10.0]
 
     steps:
       # 1️⃣ Checkout do código
@@ -24,35 +21,36 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      # 3️⃣ Restaurar pacotes
+      # 3️⃣ Restore pacotes
       - name: Restore
         run: dotnet restore
 
-      # 4️⃣ Build do target atual da matrix
-      - name: Build
-        run: dotnet build --no-restore --configuration Release -f ${{ matrix.target-framework }}
+      # 4️⃣ Build multi-target
+      - name: Build All Targets
+        run: dotnet build --no-restore --configuration Release
 
-      # 5️⃣ Testes com cobertura separada
-      - name: Test
+      # 5️⃣ Testes com cobertura para todos os targets
+      - name: Test All Targets
         run: |
-          dotnet test --no-build --configuration Release -f ${{ matrix.target-framework }} \
-            /p:CollectCoverage=true \
-            /p:CoverletOutput=./TestResults/coverage-${{ matrix.target-framework }}.xml \
-            /p:CoverletOutputFormat=cobertura
+          for tf in net8.0 net10.0; do
+            echo "Running tests for $tf"
+            dotnet test --no-build --configuration Release -f $tf \
+              /p:CollectCoverage=true \
+              /p:CoverletOutput=./TestResults/coverage-$tf.xml \
+              /p:CoverletOutputFormat=cobertura
+          done
 
-      # 6️⃣ Merge cobertura (só no net10.0)
+      # 6️⃣ Merge cobertura para Codecov
       - name: Merge Coverage
-        if: matrix.target-framework == 'net10.0'
         run: |
           dotnet tool install --global coverlet.console --version 3.2.0
           mkdir -p ./TestResults/merged
-          # Merge dos arquivos gerados por net8.0 e net10.0
           coverlet merge ./TestResults/coverage-net8.0.xml ./TestResults/coverage-net10.0.xml \
             --output ./TestResults/merged/coverage.xml --format cobertura || echo "No coverage to merge"
 
-      # 7️⃣ Pack NuGet (somente net10.0, sem rebuild)
-      - name: Pack
-        if: github.ref == 'refs/heads/main' && matrix.target-framework == 'net10.0'
+      # 7️⃣ Pack NuGet para net10.0 apenas
+      - name: Pack NuGet
+        if: github.ref == 'refs/heads/main'
         run: |
           dotnet pack src/Cms.BuildingBlocks.Domain/Cms.BuildingBlocks.Domain.csproj \
             --configuration Release \
@@ -61,8 +59,8 @@ jobs:
             /p:TargetFramework=net10.0
 
       # 8️⃣ Upload artifacts do pacote
-      - name: Upload artifacts
-        if: matrix.target-framework == 'net10.0'
+      - name: Upload NuGet Artifacts
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: nuget-packages
@@ -70,7 +68,6 @@ jobs:
 
       # 9️⃣ Upload cobertura consolidada para Codecov
       - name: Upload Coverage
-        if: matrix.target-framework == 'net10.0'
         uses: codecov/codecov-action@v3
         with:
           files: ./TestResults/merged/coverage.xml
