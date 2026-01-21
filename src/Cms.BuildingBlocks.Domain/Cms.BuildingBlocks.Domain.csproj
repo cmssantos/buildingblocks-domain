@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Metadata do pacote -->
+  <PropertyGroup>
+    <PackageId>Cms.BuildingBlocks.Domain</PackageId>
+
+    <Description>
+      Shared Domain Building Blocks for DDD-based systems:
+      Entities, Aggregate Roots, Value Objects, Domain Events, Errors and Guards.
+    </Description>
+
+    <Authors>Cleudice Santos</Authors>
+    <Company>CMS</Company>
+
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/cmssantos/buildingblocks-domain</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+
+    <PackageTags>
+      ddd;domain;building-blocks;clean-architecture;dotnet
+    </PackageTags>
+
+    <!-- NuGet Gallery -->
+    <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
+
+    <IsPackable>true</IsPackable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <!-- README do NuGet (vem da raiz do repo) -->
+  <ItemGroup>
+    <None Include="../../README.NUGET.md"
+          Pack="true"
+          PackagePath="\" />
+  </ItemGroup>
+
+  <!-- Analyzers (não vazam para consumidores) -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>
+

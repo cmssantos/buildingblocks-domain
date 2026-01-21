@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Cms.BuildingBlocks.Domain/Cms.BuildingBlocks.Domain.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Cms.BuildingBlocks.Domain.Tests/Cms.BuildingBlocks.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
