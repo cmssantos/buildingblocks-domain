@@ -93,7 +93,14 @@ jobs:
           name: nuget-packages
           path: ./artifacts
 
-      # 🔟 Upload cobertura para Codecov
+      # 🔟 Install Codecov uploader
+      - name: Install Codecov
+        run: |
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          sudo mv codecov /usr/local/bin/
+
+      # 1️⃣1️⃣ Upload cobertura para Codecov
       - name: Upload Coverage
         run: |
           if [ -f ./TestResults/coverage.xml ] && [ -s ./TestResults/coverage.xml ]; then
@@ -103,7 +110,7 @@ jobs:
             echo "No coverage report found or empty."
           fi
 
-      # 1️⃣1️⃣ Badge de cobertura
+      # 1️⃣2️⃣ Generate Coverage Badge
       - name: Generate Coverage Badge
         if: always()
         run: |
