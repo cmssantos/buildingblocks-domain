@@ -55,7 +55,7 @@ jobs:
           dotnet pack src/Cms.BuildingBlocks.Domain/Cms.BuildingBlocks.Domain.csproj \
             --configuration Release \
             --output ./artifacts \
-            -f net10.0
+            /p:TargetFramework=net10.0
 
       # 8️⃣ Upload artifacts do pacote
       - name: Upload artifacts
