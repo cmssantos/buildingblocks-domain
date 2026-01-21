@@ -57,11 +57,13 @@ jobs:
       - name: Pack NuGet
         if: github.ref == 'refs/heads/main'
         run: |
-          dotnet pack src/Cms.BuildingBlocks.Domain/Cms.BuildingBlocks.Domain.csproj \
+            dotnet build src/Cms.BuildingBlocks.Domain/Cms.BuildingBlocks.Domain.csproj \
+            --configuration Release -f net10.0
+            dotnet pack src/Cms.BuildingBlocks.Domain/Cms.BuildingBlocks.Domain.csproj \
             --configuration Release \
             --output ./artifacts \
             --no-build \
-            /p:TargetFramework=net10.0
+            -f net10.0
 
       # 8️⃣ Upload artifacts do pacote
       - name: Upload NuGet Artifacts
