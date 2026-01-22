@@ -37,24 +37,17 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Pack NuGet (with symbols)
+      - name: Pack NuGet
         run: |
           dotnet pack src/Cms.BuildingBlocks.Domain/Cms.BuildingBlocks.Domain.csproj \
             --configuration Release \
             --no-build \
             --output ./artifacts \
-            /p:Version=${{ env.VERSION }} \
-            /p:IncludeSymbols=true \
-            /p:SymbolPackageFormat=snupkg
+            /p:Version=${{ env.VERSION }}
 
       - name: Publish NuGet Package
         run: |
           dotnet nuget push ./artifacts/*.nupkg \
-            --source https://api.nuget.org/v3/index.json \
-            --api-key ${{ secrets.NUGET_API_KEY }} \
-            --skip-duplicate
-
-          dotnet nuget push ./artifacts/*.snupkg \
             --source https://api.nuget.org/v3/index.json \
             --api-key ${{ secrets.NUGET_API_KEY }} \
             --skip-duplicate
