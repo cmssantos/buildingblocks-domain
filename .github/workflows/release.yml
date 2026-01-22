@@ -6,6 +6,10 @@ on:
       - 'v*.*.*'
       - 'v*.*.*-*'
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   publish:
     name: Publish NuGet & GitHub Release
