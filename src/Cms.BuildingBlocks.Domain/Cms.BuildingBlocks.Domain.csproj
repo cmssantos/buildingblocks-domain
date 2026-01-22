@@ -1,9 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Metadata do pacote -->
+  <!-- ========================= -->
+  <!-- Package Metadata -->
+  <!-- ========================= -->
   <PropertyGroup>
-    <PackageId>Cms.BuildingBlocks.Domain</PackageId>
+    <TargetFramework>net10.0</TargetFramework>
 
+    <PackageId>Cms.BuildingBlocks.Domain</PackageId>
     <Description>
       Shared Domain Building Blocks for DDD-based systems:
       Entities, Aggregate Roots, Value Objects, Domain Events, Errors and Guards.
@@ -16,29 +19,39 @@
     <RepositoryUrl>https://github.com/cmssantos/buildingblocks-domain</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
 
-    <PackageTags>
-      ddd;domain;building-blocks;clean-architecture;dotnet
-    </PackageTags>
+    <PackageTags>ddd;domain;building-blocks;clean-architecture;dotnet</PackageTags>
 
     <!-- NuGet Gallery -->
     <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
 
+    <!-- Packaging -->
     <IsPackable>true</IsPackable>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <!-- 🔒 Symbols (CORRETO) -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+
+    <!-- ❌ NÃO empacotar no build -->
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <!-- README do NuGet (vem da raiz do repo) -->
+  <!-- ========================= -->
+  <!-- NuGet README -->
+  <!-- ========================= -->
   <ItemGroup>
-    <None Include="../../README.NUGET.md"
+    <None Include="README.NUGET.md"
           Pack="true"
           PackagePath="\" />
   </ItemGroup>
 
-  <!-- Analyzers (não vazam para consumidores) -->
+  <!-- ========================= -->
+  <!-- Analyzers (dev-only) -->
+  <!-- ========================= -->
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers"
                       PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
-
