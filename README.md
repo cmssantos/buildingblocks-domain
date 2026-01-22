@@ -1,113 +1,228 @@
+
 # Cms.BuildingBlocks.Domain
 
-## Badges
+Reusable **Domain Building Blocks** for .NET applications following **Domain-Driven Design (DDD)**, **Clean Architecture**, and **SOLID** principles.
 
-### Main (Release)
-[![CI/CD](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/dotnet-ci.yml/badge.svg)](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/dotnet-ci.yml)
-![Coverage Main](https://codecov.io/gh/cmssantos/buildingblocks-domain/branch/main/graph/badge.svg)
-![NuGet](https://img.shields.io/nuget/v/Cms.BuildingBlocks.Domain.svg)
-
----
-
-## Overview
-
-Core **Domain Building Blocks** for .NET applications following **Clean Architecture**, **SOLID**, and **Domain-Driven Design (DDD)** principles.
-
-Provides reusable abstractions to accelerate rich domain model development while keeping the domain layer **clean, expressive, and independent** from infrastructure concerns.
+![CI](https://github.com/your-org/Cms.BuildingBlocks.Domain/actions/workflows/ci.yml/badge.svg)
+![NuGet](https://img.shields.io/nuget/v/Cms.BuildingBlocks.Domain)
+![Downloads](https://img.shields.io/nuget/dt/Cms.BuildingBlocks.Domain)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
 
-## ✨ Features
+## 🎯 Purpose
 
-- Base abstractions for **Entities**, **Value Objects**, and **Aggregates**
-- **Domain Errors** and Result pattern
-- Guard Clauses for invariant protection
-- Strongly-typed identifiers
-- Fully compatible with **DDD Tactical Patterns**
-- No external dependencies
-- Designed for **high testability**
-- **Multi-targeted**: `net8.0` and `net10.0`
+This package provides **pure, infrastructure-agnostic domain abstractions** to help you build **rich domain models** with:
+
+- Explicit business rules
+- Strong invariants
+- Clear aggregate boundaries
+- First-class domain events
+- Semantic domain errors
+
+It is intentionally **minimal**, **opinionated**, and **framework-free**.
 
 ---
 
-## 🧱 Architecture Alignment
+## 🧱 Architectural Positioning
 
-This package is intended to be used **only in the Domain layer**:
+This package is designed to be referenced **only by the Domain layer**.
 
 ```
-Domain
- ├─ Aggregates
- ├─ Entities
- ├─ ValueObjects
- ├─ Errors
- ├─ Guards
- └─ Abstractions
+src
+├─ YourService.Domain          ← references Cms.BuildingBlocks.Domain
+├─ YourService.Application
+├─ YourService.Infrastructure
+└─ YourService.API
 ```
 
-Must **not** depend on:
-- Infrastructure
-- EF Core
-- ASP.NET Core
-- Serialization frameworks
+### Important Rules
+
+- ❌ Domain must NOT depend on Infrastructure
+- ❌ Domain must NOT reference EF Core, ASP.NET, MediatR, Logging
+- ✅ Application & Infrastructure depend on Domain
+- ✅ Domain expresses business language, not technical concerns
 
 ---
 
-## 🚀 Installation
+## ✨ Key Features
+
+- **AggregateRoot** base with versioning support
+- **Entity** base with built-in Domain Events
+- **Strongly-typed Entity IDs**
+- **Value Object base**
+- **Explicit Domain Errors & Exceptions**
+- **Guard Clauses with business semantics**
+- **Audit-friendly abstractions**
+- **Zero infrastructure dependencies**
+
+---
+
+## 📦 Installation
 
 ```bash
 dotnet add package Cms.BuildingBlocks.Domain
 ```
 
-For private NuGet feeds:
+---
 
-```bash
-dotnet nuget add source <URL> -n Cms --username <USER> --password <TOKEN>
+## 🧩 Core Concepts
+
+### Aggregate Root
+
+```csharp
+public abstract class AggregateRoot<TId> : Entity<TId>
+    where TId : IEntityId
+{
+    public int Version { get; private set; }
+}
 ```
 
 ---
 
-## 🧪 Testing
+### Entity Base & Domain Events
 
-- Multi-targeted (`net8.0`, `net10.0`)
-- Deterministic & CI-friendly
-- Run tests:
+```csharp
+public abstract class Entity<TId>
+    where TId : IEntityId
+{
+    public TId Id { get; protected init; } = default!;
 
-```bash
-dotnet test
-```
+    private readonly List<IDomainEvent> _domainEvents = [];
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents;
 
-- Coverage threshold enforced (80% minimum)
-- Coverage uploaded to **Codecov**
+    protected void Raise(IDomainEvent domainEvent)
+        => _domainEvents.Add(domainEvent);
 
----
-
-## 🔖 Versioning
-
-- **Semantic Versioning** with automated versioning:
-  - `main` branch → releases (patch increment automatically)
-  - `develop` branch → pre-releases `-beta.N` (continuous)
-  - Git tags → synchronized with NuGet
-- **PATCH** auto-incremented based on last release tag
-- Pre-releases automatically numbered by commits since last tag
-
-Example:
-
-```xml
-<Version>1.0.3</Version>          <!-- main/release -->
-<Version>1.0.4-beta.2</Version>   <!-- develop/pre-release -->
+    public void ClearDomainEvents()
+        => _domainEvents.Clear();
+}
 ```
 
 ---
 
-## 📄 License
+### Domain Events
+
+```csharp
+public interface IDomainEvent
+{
+    DateTime OccurredOn { get; }
+}
+```
+
+---
+
+### Strongly-Typed Entity IDs
+
+```csharp
+public abstract record EntityId<T>(T Value) : IEntityId
+    where T : notnull;
+```
+
+```csharp
+public interface IEntityId
+{
+    object Value { get; }
+}
+```
+
+---
+
+### Value Objects
+
+```csharp
+public abstract record ValueObject;
+```
+
+---
+
+## 🛡 Guard Clauses
+
+```csharp
+Guard.AgainstNull(name, CategoryErrors.NameRequired);
+Guard.AgainstNegativeOrZero(amount, TransactionErrors.InvalidAmount);
+```
+
+---
+
+## ❌ Domain Errors & Exceptions
+
+```csharp
+public sealed class DomainError(
+    string code,
+    IReadOnlyDictionary<string, string?>? metadata = null);
+```
+
+```csharp
+public sealed class DomainException(DomainError error)
+    : Exception(error.Code);
+```
+
+---
+
+## 🧪 Complete Example — Category Aggregate
+
+```csharp
+public sealed record CategoryId(Guid Value) : EntityId<Guid>(Value);
+
+public sealed record CategoryName(string Value) : ValueObject
+{
+    public CategoryName(string value) : this(
+        Guard.AgainstNullOrEmpty(value, CategoryErrors.NameRequired))
+    { }
+}
+
+public sealed class Category : AggregateRoot<CategoryId>
+{
+    public CategoryName Name { get; private set; }
+    public bool IsArchived { get; private set; }
+
+    private Category(CategoryId id, CategoryName name)
+    {
+        Id = id;
+        Name = name;
+    }
+
+    public static Category Create(CategoryId id, CategoryName name)
+    {
+        var category = new Category(id, name);
+        category.Raise(new CategoryCreated(id, DateTime.UtcNow));
+        return category;
+    }
+
+    public void Archive()
+    {
+        if (IsArchived) return;
+
+        IsArchived = true;
+        Raise(new CategoryArchived(Id, DateTime.UtcNow));
+    }
+}
+```
+
+---
+
+## 🧭 Versioning Strategy
+
+This project follows **Semantic Versioning (SemVer)**:
+
+- **MAJOR** – Breaking changes in domain contracts
+- **MINOR** – New abstractions (backward compatible)
+- **PATCH** – Bug fixes, refactors
+
+---
+
+## 🚫 What This Package Does NOT Do
+
+- Persistence
+- ORM integration
+- Logging
+- Serialization
+- Messaging
+- Dependency Injection
+
+---
+
+## 📜 License
 
 MIT
-
----
-
-## 🧠 Philosophy
-
-> “The Domain Model is the heart of the software.”
-> — Eric Evans
-
-This package exists to keep that heart **clean, expressive, and protected**.

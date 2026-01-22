@@ -1,22 +1,21 @@
+
 # Cms.BuildingBlocks.Domain
 
-Reusable **Domain Building Blocks** for .NET applications using **DDD**, **Clean Architecture**, and **SOLID**.
+Pure **Domain Building Blocks** for .NET applications using **DDD**, **Clean Architecture**, and **SOLID**.
 
-✔ No infrastructure dependencies
-✔ Designed for rich domain models
-✔ Multi-targeted (`net8.0`, `net10.0`)
-
----
+![NuGet](https://img.shields.io/nuget/v/Cms.BuildingBlocks.Domain)
+![Downloads](https://img.shields.io/nuget/dt/Cms.BuildingBlocks.Domain)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## Features
 
-- Base `Entity` and `ValueObject` abstractions
-- Domain Errors and Result pattern
-- Guard Clauses
-- Strongly-typed identifiers
-- Deterministic, CI-friendly builds
-
----
+- AggregateRoot & Entity base classes
+- Strongly-typed Entity IDs
+- Domain Events (no MediatR dependency)
+- Value Objects
+- Guard Clauses with Domain Errors
+- Audit-friendly abstractions
+- Zero infrastructure dependencies
 
 ## Installation
 
@@ -24,26 +23,38 @@ Reusable **Domain Building Blocks** for .NET applications using **DDD**, **Clean
 dotnet add package Cms.BuildingBlocks.Domain
 ```
 
----
+## Example (Aggregate)
 
-## Usage
+```csharp
+public sealed class Category : AggregateRoot<CategoryId>
+{
+    public CategoryName Name { get; private set; }
+    public bool IsArchived { get; private set; }
 
-Designed to be used **only in the Domain layer**.
+    private Category(CategoryId id, CategoryName name)
+    {
+        Id = id;
+        Name = name;
+    }
 
-No dependency on:
-- EF Core
-- ASP.NET Core
-- Serialization
-- Logging
+    public static Category Create(CategoryId id, CategoryName name)
+    {
+        Guard.AgainstNull(name, CategoryErrors.NameRequired);
 
----
+        var category = new Category(id, name);
+        category.Raise(new CategoryCreated(id, DateTime.UtcNow));
 
-## Target Frameworks
+        return category;
+    }
+}
+```
 
-- net8.0
-- net10.0
+## Versioning
 
----
+This package follows **Semantic Versioning (SemVer)**:
+- **MAJOR** – breaking domain contracts
+- **MINOR** – new abstractions, backward compatible
+- **PATCH** – fixes and refactors
 
 ## License
 
