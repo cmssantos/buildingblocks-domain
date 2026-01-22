@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  COVERLET_MIN_THRESHOLD: 80
+
+jobs:
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test with Coverage
+        run: |
+          dotnet test tests/Cms.BuildingBlocks.Domain.Tests \
+            --configuration Release \
+            --no-build \
+            --collect:"XPlat Code Coverage"
+
+      - name: Check Coverage Threshold
+        run: |
+          FILE=$(find . -name "*.cobertura.xml" | head -n1)
+          RATE=$(grep -oP 'line-rate="\K[0-9.]+' "$FILE")
+          PERCENT=$(echo "$RATE * 100 / 1" | bc)
+          echo "Coverage: $PERCENT%"
+          if [ "$PERCENT" -lt $COVERLET_MIN_THRESHOLD ]; then
+            echo "Coverage below threshold"
+            exit 1
+          fi
