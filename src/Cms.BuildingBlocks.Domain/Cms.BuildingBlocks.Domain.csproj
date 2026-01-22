@@ -4,7 +4,7 @@
   <!-- Package Metadata -->
   <!-- ========================= -->
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 
     <PackageId>Cms.BuildingBlocks.Domain</PackageId>
     <Description>
@@ -27,13 +27,13 @@
     <!-- Packaging -->
     <IsPackable>true</IsPackable>
 
-    <!-- 🔒 Symbols (CORRETO) -->
+    <!-- Symbols (CORRETO) -->
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
 
-    <!-- ❌ NÃO empacotar no build -->
+    <!-- NÃO empacotar no build -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
@@ -49,7 +49,7 @@
   <!-- ========================= -->
   <!-- Analyzers (dev-only) -->
   <!-- ========================= -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers"
                       PrivateAssets="all" />
   </ItemGroup>
