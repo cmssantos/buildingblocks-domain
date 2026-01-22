@@ -3,7 +3,7 @@
 
 Reusable **Domain Building Blocks** for .NET applications following **Domain-Driven Design (DDD)**, **Clean Architecture**, and **SOLID** principles.
 
-[![Build](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/ci.yml/badge.svg)](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/ci.yml)
+[![CI](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/ci.yml/badge.svg)](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/ci.yml)
 [![Release](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/release.yml/badge.svg)](https://github.com/cmssantos/buildingblocks-domain/actions/workflows/release.yml)
 ![NuGet](https://img.shields.io/nuget/v/Cms.BuildingBlocks.Domain)
 ![Downloads](https://img.shields.io/nuget/dt/Cms.BuildingBlocks.Domain)
