@@ -46,4 +46,47 @@ public sealed class Guard_Numeric_Tests
 
         act.ShouldThrow<DomainException>();
     }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(-0.01)]
+    public void AgainstNegativeDecimal_ShouldThrow_WhenNegative(decimal value)
+    {
+        Action act = () =>
+            Guard.AgainstNegative(value, new DomainError("negative"));
+
+        act.ShouldThrow<DomainException>();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(10.5)]
+    public void AgainstNegativeDecimal_ShouldReturn_WhenZeroOrPositive(decimal value)
+    {
+        var result = Guard.AgainstNegative(value, TestDomainError.DummyError());
+
+        result.ShouldBe(value);
+    }
+
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void AgainstNegativeOrZeroDecimal_ShouldThrow_WhenInvalid(decimal value)
+    {
+        Action act = () =>
+            Guard.AgainstNegativeOrZero(value, new DomainError("invalid"));
+
+        act.ShouldThrow<DomainException>();
+    }
+
+    [Theory]
+    [InlineData(0.01)]
+    [InlineData(10)]
+    public void AgainstNegativeOrZeroDecimal_ShouldReturn_WhenPositive(decimal value)
+    {
+        var result = Guard.AgainstNegativeOrZero(value, TestDomainError.DummyError());
+
+        result.ShouldBe(value);
+    }
 }

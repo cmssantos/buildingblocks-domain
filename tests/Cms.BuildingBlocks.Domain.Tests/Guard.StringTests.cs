@@ -9,6 +9,15 @@ namespace Cms.BuildingBlocks.Domain.Tests;
 
 public sealed class Guard_String_Tests
 {
+    [Fact]
+    public void AgainstNull_ShouldReturnValue_WhenNotNull()
+    {
+        var value = Guard.AgainstNull("ok", TestDomainError.DummyError());
+
+        value.ShouldBe("ok");
+    }
+
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
