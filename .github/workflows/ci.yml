@@ -36,17 +36,6 @@ jobs:
             --no-build \
             --collect:"XPlat Code Coverage"
 
-      - name: Check Coverage Threshold
-        run: |
-          FILE=$(find . -name "*.cobertura.xml" | head -n1)
-          RATE=$(grep -oP 'line-rate="\K[0-9.]+' "$FILE")
-          PERCENT=$(echo "$RATE * 100 / 1" | bc)
-          echo "Coverage: $PERCENT%"
-          if [ "$PERCENT" -lt $COVERLET_MIN_THRESHOLD ]; then
-            echo "Coverage below threshold"
-            exit 1
-          fi
-
       - name: Install Codecov
         run: |
           curl -Os https://uploader.codecov.io/latest/linux/codecov
@@ -59,6 +48,17 @@ jobs:
         run: |
           FILE=$(find . -name "*.cobertura.xml" | head -n1)
           codecov -f "$FILE"
+
+      - name: Check Coverage Threshold
+        run: |
+          FILE=$(find . -name "*.cobertura.xml" | head -n1)
+          RATE=$(grep -oP 'line-rate="\K[0-9.]+' "$FILE")
+          PERCENT=$(echo "$RATE * 100 / 1" | bc)
+          echo "Coverage: $PERCENT%"
+          if [ "$PERCENT" -lt $COVERLET_MIN_THRESHOLD ]; then
+            echo "Coverage below threshold"
+            exit 1
+          fi
 
   version-and-pack:
     name: Versioning & Pack
