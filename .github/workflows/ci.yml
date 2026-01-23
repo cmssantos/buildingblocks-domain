@@ -57,12 +57,15 @@ jobs:
       - name: Determine version
         id: version
         run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 || echo "1.1.0")
+          LAST_TAG=$(git tag --sort=-creatordate | grep -Eo '^[0-9]+\.[0-9]+\.[0-9]+(-alpha|-beta)?.*' | head -n 1 || echo "1.1.0")
           BRANCH=${GITHUB_REF##*/}
 
-          SUFFIX=""
+          TODAY=$(date +'%y%m%d')
+          BUILD=1
+
           if [[ "$BRANCH" == develop ]]; then
             MERGE_MSG=$(git log -1 --pretty=%B)
+
             if [[ "$MERGE_MSG" == feature/* ]]; then
               SUFFIX="alpha"
               VERSION=$(echo $LAST_TAG | awk -F. -v OFS=. '{$2++; $3=0; print}')
@@ -73,7 +76,12 @@ jobs:
               SUFFIX="alpha"
               VERSION=$(echo $LAST_TAG | awk -F. -v OFS=. '{$2++; $3=0; print}')
             fi
-            VERSION="$VERSION-$SUFFIX.$(date +'%Y%m%d')"
+
+            # Calcula BUILD incremental baseado em tags existentes para hoje
+            TODAY_TAGS=$(git tag | grep "$VERSION-$SUFFIX.$TODAY" | wc -l)
+            BUILD=$((TODAY_TAGS + 1))
+
+            VERSION="$VERSION-$SUFFIX.$TODAY.$BUILD"
           else
             # main → release oficial
             VERSION=$LAST_TAG
