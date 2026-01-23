@@ -37,13 +37,15 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Pack NuGet
+      - name: Pack
         run: |
           dotnet pack src/Cms.BuildingBlocks.Domain/Cms.BuildingBlocks.Domain.csproj \
             --configuration Release \
             --no-build \
             --output ./artifacts \
-            /p:Version=${{ env.VERSION }}
+            /p:PackageVersion=${{ env.VERSION }} \
+            /p:IncludeSymbols=true \
+            /p:SymbolPackageFormat=snupkg
 
       - name: Publish NuGet Package
         run: |
@@ -57,4 +59,5 @@ jobs:
         with:
           tag_name: v${{ env.VERSION }}
           name: Cms.BuildingBlocks.Domain v${{ env.VERSION }}
+          prerelease: ${{ contains(env.VERSION, '-') }}
           generate_release_notes: true

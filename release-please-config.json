@@ -1,0 +1,14 @@
+{
+  "packages": {
+    "src/Cms.BuildingBlocks.Domain": {
+      "release-type": "dotnet",
+      "package-name": "Cms.BuildingBlocks.Domain",
+      "changelog-path": "src/Cms.BuildingBlocks.Domain/CHANGELOG.md"
+    },
+    "src/Cms.BuildingBlocks.Application": {
+      "release-type": "dotnet",
+      "package-name": "Cms.BuildingBlocks.Application",
+      "changelog-path": "src/Cms.BuildingBlocks.Application/CHANGELOG.md"
+    }
+  }
+}
