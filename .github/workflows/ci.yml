@@ -28,7 +28,7 @@ jobs:
 
       - name: Test with Coverage
         run: |
-          dotnet test tests/Cms.BuildingBlocks.Application.Tests \
+          dotnet test tests/Cms.BuildingBlocks.Domain.Tests \
             --configuration Release \
             --no-build \
             --collect:"XPlat Code Coverage"
