@@ -1,4 +1,4 @@
-name: Release Please (Develop)
+name: Release Please (develop - prerelease)
 
 on:
   push:
@@ -14,10 +14,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: googleapis/release-please-action@v4
+      - name: Release Please (prerelease)
+        uses: googleapis/release-please-action@v4
         with:
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target-branch: develop
           prerelease: true
           prerelease-type: alpha
-          target-branch: develop
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
