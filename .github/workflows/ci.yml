@@ -40,10 +40,15 @@ jobs:
       - name: Enforce coverage threshold
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          filename: 'tests/Cms.BuildingBlocks.Domain.Tests/TestResults/coverage.cobertura.xml'
-          thresholds: "${{ env.COVERLET_MIN_THRESHOLD }}"
-          fail_below_min: true
-          format: text
+            filename: ${{ github.workspace }}/tests/Cms.BuildingBlocks.Domain.Tests/TestResults/coverage.cobertura.xml
+            thresholds: "${{ env.COVERLET_MIN_THRESHOLD }}"
+            fail_below_min: true
+            format: text
+            badge: false
+            hide_branch_rate: false
+            hide_complexity: false
+            indicators: true
+            output: console
 
   version-and-pack:
     name: Versioning & Pack
