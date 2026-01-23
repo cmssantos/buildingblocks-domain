@@ -16,7 +16,6 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
-          release-type: dotnet-library
+          command: manifest
           prerelease: true
           prerelease-type: alpha
-          target-branch: develop
