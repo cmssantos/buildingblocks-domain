@@ -12,6 +12,10 @@
       Entities, Aggregate Roots, Value Objects, Domain Events, Errors and Guards.
     </Description>
 
+    <!-- Version injected by release-please -->
+    <Version>0.0.0</Version>
+    <PackageVersion>0.0.0</PackageVersion>
+
     <Authors>Cleudice Santos</Authors>
     <Company>CMS</Company>
 
