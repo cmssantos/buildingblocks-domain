@@ -1,9 +1,9 @@
 {
   "packages": {
-    ".": {
+    "src/Cms.BuildingBlocks.Domain": {
       "release-type": "dotnet-library",
       "package-name": "Cms.BuildingBlocks.Domain",
-      "changelog-path": "CHANGELOG.md"
+      "changelog-path": "src/Cms.BuildingBlocks.Domain/CHANGELOG.md"
     }
   }
 }
