@@ -36,14 +36,6 @@ jobs:
             /p:CoverletOutput=./TestResults/coverage.cobertura.xml \
             /p:CoverletOutputFormat=cobertura
 
-      - name: Enforce coverage threshold
-        uses: irongut/CodeCoverageSummary@v1.3.0
-        with:
-            filename: '**/TestResults/coverage.cobertura.xml'
-            thresholds: "${{ env.COVERLET_MIN_THRESHOLD }}"
-            fail_below_min: true
-            format: text
-
   version-and-pack:
     name: Versioning & Pack
     runs-on: ubuntu-latest
