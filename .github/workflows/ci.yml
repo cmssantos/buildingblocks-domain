@@ -7,7 +7,7 @@ on:
       - main
 
 env:
-  COVERLET_MIN_THRESHOLD: 80
+  COVERLET_MIN_THRESHOLD: 90
 
 jobs:
   build-test:
@@ -28,13 +28,22 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          mkdir -p ./TestResults
+          mkdir -p ./tests/Cms.BuildingBlocks.Domain.Tests/TestResults
+
           dotnet test tests/Cms.BuildingBlocks.Domain.Tests \
             --configuration Release \
             --no-build \
             /p:CollectCoverage=true \
-            /p:CoverletOutput=./TestResults/coverage.cobertura.xml \
+            /p:CoverletOutput=./tests/Cms.BuildingBlocks.Domain.Tests/TestResults/coverage.cobertura.xml \
             /p:CoverletOutputFormat=cobertura
+
+      - name: Enforce coverage threshold
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: 'tests/Cms.BuildingBlocks.Domain.Tests/TestResults/coverage.cobertura.xml'
+          thresholds: "${{ env.COVERLET_MIN_THRESHOLD }}"
+          fail_below_min: true
+          format: text
 
   version-and-pack:
     name: Versioning & Pack
