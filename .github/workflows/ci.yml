@@ -28,7 +28,8 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          dotnet test tests/Cms.BuildingBlocks.Domain.Tests \
+            mkdir -p ./TestResults
+            dotnet test tests/Cms.BuildingBlocks.Domain.Tests \
             --configuration Release \
             --no-build \
             /p:CollectCoverage=true \
@@ -38,9 +39,10 @@ jobs:
       - name: Enforce coverage threshold
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          filename: '**/TestResults/coverage.cobertura.xml'
-          thresholds: "${{ env.COVERLET_MIN_THRESHOLD }}"
-          fail_below_min: true
+            filename: '**/TestResults/coverage.cobertura.xml'
+            thresholds: "${{ env.COVERLET_MIN_THRESHOLD }}"
+            fail_below_min: true
+            format: text
 
   version-and-pack:
     name: Versioning & Pack
