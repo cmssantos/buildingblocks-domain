@@ -1,4 +1,3 @@
-
 # Cms.BuildingBlocks.Domain
 
 Pure **Domain Building Blocks** for .NET applications using **DDD**, **Clean Architecture**, and **SOLID**.
@@ -9,13 +8,14 @@ Pure **Domain Building Blocks** for .NET applications using **DDD**, **Clean Arc
 
 ## Features
 
-- AggregateRoot & Entity base classes
-- Strongly-typed Entity IDs
-- Domain Events (no MediatR dependency)
-- Value Objects
-- Guard Clauses with Domain Errors
-- Audit-friendly abstractions
-- Zero infrastructure dependencies
+- **AggregateRoot** base with versioning support
+- **OwnedAggregateRoot** for user / tenant owned aggregates
+- **Entity** base with built-in Domain Events
+- **Strongly-typed Entity IDs**
+- **Value Objects**
+- **Domain Errors & Guard Clauses**
+- **Audit-friendly abstractions**
+- **Zero infrastructure dependencies**
 
 ## Installation
 
@@ -23,26 +23,34 @@ Pure **Domain Building Blocks** for .NET applications using **DDD**, **Clean Arc
 dotnet add package Cms.BuildingBlocks.Domain
 ```
 
-## Example (Aggregate)
+## Example (User-Owned Aggregate)
 
 ```csharp
-public sealed class Category : AggregateRoot<CategoryId>
+public sealed record CategoryId(Guid Value) : EntityId<Guid>(Value);
+public sealed record UserId(Guid Value) : EntityId<Guid>(Value);
+
+public sealed class Category
+    : OwnedAggregateRoot<CategoryId, UserId>
 {
     public CategoryName Name { get; private set; }
     public bool IsArchived { get; private set; }
 
-    private Category(CategoryId id, CategoryName name)
+    private Category(CategoryId id, UserId ownerId, CategoryName name)
     {
         Id = id;
+        OwnerId = ownerId;
         Name = name;
     }
 
-    public static Category Create(CategoryId id, CategoryName name)
+    public static Category Create(
+        CategoryId id,
+        UserId ownerId,
+        CategoryName name)
     {
         Guard.AgainstNull(name, CategoryErrors.NameRequired);
 
-        var category = new Category(id, name);
-        category.Raise(new CategoryCreated(id, DateTime.UtcNow));
+        var category = new Category(id, ownerId, name);
+        category.Raise(new CategoryCreated(id, ownerId, DateTime.UtcNow));
 
         return category;
     }

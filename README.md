@@ -1,4 +1,3 @@
-
 # Cms.BuildingBlocks.Domain
 
 Reusable **Domain Building Blocks** for .NET applications following **Domain-Driven Design (DDD)**, **Clean Architecture**, and **SOLID** principles.
@@ -49,6 +48,7 @@ src
 ## ✨ Key Features
 
 - **AggregateRoot** base with versioning support
+- **OwnedAggregateRoot** for user / tenant owned aggregates
 - **Entity** base with built-in Domain Events
 - **Strongly-typed Entity IDs**
 - **Value Object base**
@@ -78,6 +78,26 @@ public abstract class AggregateRoot<TId> : Entity<TId>
     public int Version { get; private set; }
 }
 ```
+
+---
+
+### Owned Aggregate Root
+
+```csharp
+public abstract class OwnedAggregateRoot<TId, TOwnerId>
+    : AggregateRoot<TId>
+    where TId : IEntityId
+    where TOwnerId : IEntityId
+{
+    public TOwnerId OwnerId { get; protected init; } = default!;
+}
+```
+
+Use `OwnedAggregateRoot` when the aggregate lifecycle and visibility
+are bound to a specific **user**, **account**, or **tenant**.
+
+This is especially common in **financial systems**, **SaaS platforms**,
+and **multi-tenant applications**.
 
 ---
 
@@ -161,10 +181,11 @@ public sealed class DomainException(DomainError error)
 
 ---
 
-## 🧪 Complete Example — Category Aggregate
+## 🧪 Complete Example — User-Owned Category Aggregate
 
 ```csharp
 public sealed record CategoryId(Guid Value) : EntityId<Guid>(Value);
+public sealed record UserId(Guid Value) : EntityId<Guid>(Value);
 
 public sealed record CategoryName(string Value) : ValueObject
 {
@@ -173,21 +194,26 @@ public sealed record CategoryName(string Value) : ValueObject
     { }
 }
 
-public sealed class Category : AggregateRoot<CategoryId>
+public sealed class Category
+    : OwnedAggregateRoot<CategoryId, UserId>
 {
     public CategoryName Name { get; private set; }
     public bool IsArchived { get; private set; }
 
-    private Category(CategoryId id, CategoryName name)
+    private Category(CategoryId id, UserId ownerId, CategoryName name)
     {
         Id = id;
+        OwnerId = ownerId;
         Name = name;
     }
 
-    public static Category Create(CategoryId id, CategoryName name)
+    public static Category Create(
+        CategoryId id,
+        UserId ownerId,
+        CategoryName name)
     {
-        var category = new Category(id, name);
-        category.Raise(new CategoryCreated(id, DateTime.UtcNow));
+        var category = new Category(id, ownerId, name);
+        category.Raise(new CategoryCreated(id, ownerId, DateTime.UtcNow));
         return category;
     }
 
@@ -196,7 +222,7 @@ public sealed class Category : AggregateRoot<CategoryId>
         if (IsArchived) return;
 
         IsArchived = true;
-        Raise(new CategoryArchived(Id, DateTime.UtcNow));
+        Raise(new CategoryArchived(Id, OwnerId, DateTime.UtcNow));
     }
 }
 ```
