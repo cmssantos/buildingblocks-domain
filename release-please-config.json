@@ -1,9 +1,0 @@
-{
-  "packages": {
-    "src/Cms.BuildingBlocks.Domain": {
-      "release-type": "simple",
-      "package-name": "Cms.BuildingBlocks.Domain",
-      "changelog-path": "src/Cms.BuildingBlocks.Domain/CHANGELOG.md"
-    }
-  }
-}
