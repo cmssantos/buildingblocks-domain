@@ -26,29 +26,21 @@ jobs:
       - run: dotnet restore
       - run: dotnet build --configuration Release --no-restore
 
-      - name: Run tests with coverage
+      - name: Test with Coverage
         run: |
-          mkdir -p ./tests/Cms.BuildingBlocks.Domain.Tests/TestResults
-
-          dotnet test tests/Cms.BuildingBlocks.Domain.Tests \
+            dotnet test tests/Cms.BuildingBlocks.Domain.Tests \
             --configuration Release \
             --no-build \
             /p:CollectCoverage=true \
-            /p:CoverletOutput=./tests/Cms.BuildingBlocks.Domain.Tests/TestResults/coverage.cobertura.xml \
+            /p:CoverletOutput=./TestResults/coverage.cobertura.xml \
             /p:CoverletOutputFormat=cobertura
 
-      - name: Enforce coverage threshold
+      - name: Enforce Coverage Threshold
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-            filename: ${{ github.workspace }}/tests/Cms.BuildingBlocks.Domain.Tests/TestResults/coverage.cobertura.xml
+            filename: '**/TestResults/coverage.cobertura.xml'
             thresholds: "${{ env.COVERLET_MIN_THRESHOLD }}"
             fail_below_min: true
-            format: text
-            badge: false
-            hide_branch_rate: false
-            hide_complexity: false
-            indicators: true
-            output: console
 
   version-and-pack:
     name: Versioning & Pack
