@@ -34,11 +34,14 @@ jobs:
 
       - name: Build
         run: |
+            VERSION="${{ env.GitVersion_AssemblySemVer }}"
+            INFO="${{ env.GitVersion_SemVer }}"
+
             dotnet build \
             --configuration Release \
-            /p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
-            /p:FileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }} \
-            /p:InformationalVersion=${{ steps.gitversion.outputs.fullSemVer }}
+            /p:AssemblyVersion=$VERSION \
+            /p:FileVersion=$VERSION \
+            /p:InformationalVersion=$INFO
 
       - name: Pack
         run: |
