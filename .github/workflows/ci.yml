@@ -51,7 +51,6 @@ jobs:
             /p:FileVersion=${{ env.GitVersion_AssemblySemFileVer }} \
             /p:InformationalVersion=${{ env.GitVersion_SemVer }}
 
-
       - name: Test with coverage
         run: >
           dotnet test
