@@ -6,6 +6,9 @@ on:
   push:
     branches: [develop, main]
 
+env:
+  COVERAGE_THRESHOLD: 85
+
 jobs:
   build-test:
     runs-on: ubuntu-latest
@@ -23,8 +26,15 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Test
-        run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
+      - name: Test with coverage
+        run: >
+            dotnet test
+            --configuration Release
+            --collect:"XPlat Code Coverage"
+            /p:CollectCoverage=true
+            /p:CoverletOutputFormat=cobertura
+            /p:Threshold=${{ env.COVERAGE_THRESHOLD }}
+            /p:ThresholdType=line
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
