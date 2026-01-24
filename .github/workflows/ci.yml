@@ -23,8 +23,22 @@ jobs:
       - name: Restore
         run: dotnet restore
 
+      - name: Install GitVersion
+        uses: GitTools/actions/gitversion/setup@v0
+        with:
+            versionSpec: '6.x'
+
+      - name: Determine Version
+        id: gitversion
+        uses: GitTools/actions/gitversion/execute@v0
+
+      - name: Show version
+        run: |
+            echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
+            echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
+
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build --configuration Release /p:Version=${{ steps.gitversion.outputs.semVer }}
 
       - name: Test with coverage
         run: >
@@ -41,3 +55,8 @@ jobs:
         with:
           name: coverage-report
           path: '**/TestResults/**/coverage.cobertura.xml'
+
+      - name: Pack
+        run: dotnet pack
+            --configuration Release
+            /p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
