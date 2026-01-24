@@ -33,15 +33,13 @@ jobs:
           configFilePath: GitVersion.yml
 
       - name: Build
+        shell: bash
         run: |
-            VERSION="${{ env.GitVersion_AssemblySemVer }}"
-            INFO="${{ env.GitVersion_SemVer }}"
-
             dotnet build \
             --configuration Release \
-            /p:AssemblyVersion=$VERSION \
-            /p:FileVersion=$VERSION \
-            /p:InformationalVersion=$INFO
+            /p:AssemblyVersion=${{ env.GitVersion_AssemblySemVer }} \
+            /p:FileVersion=${{ env.GitVersion_AssemblySemFileVer }} \
+            /p:InformationalVersion=${{ env.GitVersion_SemVer }}
 
       - name: Pack
         run: |
