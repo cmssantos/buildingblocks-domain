@@ -28,6 +28,9 @@ jobs:
       - name: Determine Version
         id: gitversion
         uses: GitTools/actions/gitversion/execute@v0
+        with:
+          useConfigFile: true
+          configFilePath: GitVersion.yml
 
       - name: Build
         run: dotnet build --configuration Release --no-restore /p:Version=${{ steps.gitversion.outputs.semVer }}

@@ -1,24 +1,36 @@
-mode: ContinuousDeployment
+mode: ContinuousDelivery
 
 branches:
   main:
     regex: ^main$
-    tag: ''
-    increment: Minor
+    increment: Patch
+    is-release-branch: true
+    label: ''
+    prevent-increment-of-merged-branch-version: true
 
   develop:
     regex: ^develop$
-    tag: alpha
     increment: Minor
+    is-release-branch: false
+    label: alpha
 
-  feature:
-    regex: ^feature[/-]
-    increment: Inherit
-
-  bugfix:
-    regex: ^bugfix[/-]
-    increment: Patch
+  release:
+    regex: ^release[/-]
+    increment: Minor
+    is-release-branch: true
+    label: beta
 
   hotfix:
     regex: ^hotfix[/-]
     increment: Patch
+    is-release-branch: true
+    label: hotfix
+
+  feature:
+    regex: ^feature[/-]
+    increment: Inherit
+    is-release-branch: false
+    label: feature
+
+ignore:
+  sha: []
