@@ -26,7 +26,7 @@ jobs:
       - name: Install GitVersion
         uses: GitTools/actions/gitversion/setup@v0
         with:
-            versionSpec: '6.x'
+          versionSpec: '6.x'
 
       - name: Determine Version
         id: gitversion
@@ -34,29 +34,26 @@ jobs:
 
       - name: Show version
         run: |
-            echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
-            echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
+          echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
+          echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
 
       - name: Build
-        run: dotnet build --configuration Release /p:Version=${{ steps.gitversion.outputs.semVer }}
+        run: dotnet build --configuration Release --no-restore /p:Version=${{ steps.gitversion.outputs.semVer }}
 
       - name: Test with coverage
         run: >
-            dotnet test
-            --configuration Release
-            --collect:"XPlat Code Coverage"
-            /p:CollectCoverage=true
-            /p:CoverletOutputFormat=cobertura
-            /p:Threshold=${{ env.COVERAGE_THRESHOLD }}
-            /p:ThresholdType=line
+          dotnet test
+          --configuration Release
+          --no-build
+          /p:Version=${{ steps.gitversion.outputs.semVer }}
+          --collect:"XPlat Code Coverage"
+          /p:CollectCoverage=true
+          /p:CoverletOutputFormat=cobertura
+          /p:Threshold=${{ env.COVERAGE_THRESHOLD }}
+          /p:ThresholdType=line
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: '**/TestResults/**/coverage.cobertura.xml'
-
-      - name: Pack
-        run: dotnet pack
-            --configuration Release
-            /p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
