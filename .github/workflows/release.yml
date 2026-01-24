@@ -33,12 +33,16 @@ jobs:
           configFilePath: GitVersion.yml
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore /p:Version=${{ steps.gitversion.outputs.semVer }}
+        run: |
+            dotnet build \
+            --configuration Release \
+            /p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
+            /p:FileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }} \
+            /p:InformationalVersion=${{ steps.gitversion.outputs.fullSemVer }}
 
       - name: Pack
-        run: dotnet pack
-             --configuration Release
-             --no-build
-             /p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
-
-
+        run: |
+            dotnet pack \
+            --configuration Release \
+            --no-build \
+            /p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
