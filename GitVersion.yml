@@ -6,7 +6,6 @@ branches:
     increment: Patch
     is-release-branch: true
     label: ''
-    prevent-increment-of-merged-branch-version: true
 
   develop:
     regex: ^develop$
