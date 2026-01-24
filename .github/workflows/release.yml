@@ -21,7 +21,7 @@ jobs:
       - name: Install GitVersion
         uses: GitTools/actions/gitversion/setup@v0
         with:
-          versionSpec: '6.x'
+          versionSpec: '6.0.5'
 
       - name: Determine Version
         id: gitversion
@@ -36,7 +36,4 @@ jobs:
              --no-build
              /p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
 
-      - name: Push to NuGet
-        run: dotnet nuget push **/*.nupkg
-             --api-key ${{ secrets.NUGET_API_KEY }}
-             --source https://api.nuget.org/v3/index.json
+      
