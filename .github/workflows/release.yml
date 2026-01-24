@@ -41,6 +41,7 @@ jobs:
             /p:FileVersion=${{ env.GitVersion_AssemblySemFileVer }} \
             /p:InformationalVersion=${{ env.GitVersion_SemVer }}
 
+
       - name: Pack
         run: |
             dotnet pack \

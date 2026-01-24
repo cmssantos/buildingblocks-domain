@@ -43,11 +43,14 @@ jobs:
           echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
 
       - name: Build
-        run: dotnet build \
-          --configuration Release \
-          /p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
-          /p:FileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }} \
-          /p:InformationalVersion=${{ steps.gitversion.outputs.fullSemVer }}
+        shell: bash
+        run: |
+            dotnet build \
+            --configuration Release \
+            /p:AssemblyVersion=${{ env.GitVersion_AssemblySemVer }} \
+            /p:FileVersion=${{ env.GitVersion_AssemblySemFileVer }} \
+            /p:InformationalVersion=${{ env.GitVersion_SemVer }}
+
 
       - name: Test with coverage
         run: >
