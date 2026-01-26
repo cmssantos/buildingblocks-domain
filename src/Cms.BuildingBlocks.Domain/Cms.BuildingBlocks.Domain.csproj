@@ -39,6 +39,9 @@
 
     <!-- NÃO empacotar no build -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+    <RunAnalyzers>true</RunAnalyzers>
   </PropertyGroup>
 
   <!-- ========================= -->

@@ -55,7 +55,7 @@ jobs:
             /d:sonar.pullrequest.base="${PR_BASE}"
 
       - name: Build Solution
-        run: dotnet build --configuration Release /p:RunAnalyzers=true
+        run: dotnet build -c Release /p:RunAnalyzersDuringBuild=true /p:RunAnalyzers=true
 
       - name: Run Tests with Coverage
         run: |
