@@ -113,7 +113,7 @@ jobs:
             /o:"${{ env.SONAR_ORGANIZATION }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.login="${SONAR_TOKEN}" \
-            /d:sonar.cs.cobertura.reportsPaths="${{ env.COVERAGE_RESULT_FILE }}" \
+            /d:sonar.cs.cobertura.reportsPaths="${{ env.COVERAGE_FILE }}" \
             /d:sonar.pullrequest.key="${PR_NUMBER}" \
             /d:sonar.pullrequest.branch="${PR_BRANCH}" \
             /d:sonar.pullrequest.base="${PR_BASE}"
