@@ -90,3 +90,10 @@ dotnet_diagnostic.CA2227.severity = none
 
 # Records and Value Objects may not need default constructors
 dotnet_diagnostic.CA1810.severity = none
+
+# Makes specific Sonar warnings visible as issues.
+dotnet_diagnostic.S4136.severity = warning
+dotnet_diagnostic.S2326.severity = warning
+dotnet_diagnostic.S2094.severity = warning
+dotnet_diagnostic.S4035.severity = warning
+dotnet_diagnostic.S1144.severity = warning
