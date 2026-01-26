@@ -14,7 +14,7 @@ on:
 
 env:
   COVERLET_MIN_THRESHOLD: 85
-  COVERAGE_RESULT_FILE: "**/TestResults/**/coverage.cobertura.xml"
+  COVERAGE_RESULT_FILE: "**/*.cobertura.xml"
 
 jobs:
   build-and-test:
