@@ -126,14 +126,16 @@ jobs:
 
       - name: Test with coverage
         run: |
-          find ${{ env.COVERAGE_DIR }} -name coverage -type d -exec mkdir -p {} \;
+          # Garante que a pasta coverage exista
+          mkdir -p ${{ env.COVERAGE_DIR }}/Cms.BuildingBlocks.Domain.Tests/coverage
 
           dotnet test \
+            tests/Cms.BuildingBlocks.Domain.Tests \
             --configuration Release \
             --no-build \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=coverage/ \
+            /p:CoverletOutput=${{ env.COVERAGE_DIR }}/Cms.BuildingBlocks.Domain.Tests/coverage/ \
             /p:CoverletSourceRoot=$(pwd)/src \
             /p:Exclude="[*.Tests]*"
 
