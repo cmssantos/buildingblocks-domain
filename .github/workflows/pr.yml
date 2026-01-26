@@ -11,9 +11,6 @@ env:
   SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
   SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
 
-  COVERAGE_DIR: tests
-  COVERAGE_FILE_GLOB: '**/coverage/*.cobertura.xml'
-
 jobs:
 
   pr-hygiene:
@@ -113,7 +110,7 @@ jobs:
             /o:"${{ env.SONAR_ORGANIZATION }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.login="${SONAR_TOKEN}" \
-            /d:sonar.cs.cobertura.reportsPaths="${{ env.COVERAGE_FILE_GLOB }}" \
+            /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.cobertura.xml" \
             /d:sonar.pullrequest.key="${PR_NUMBER}" \
             /d:sonar.pullrequest.branch="${PR_BRANCH}" \
             /d:sonar.pullrequest.base="${PR_BASE}"
@@ -124,25 +121,23 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release
 
-      - name: Test with coverage
+      - name: Run all tests with coverage
         run: |
-          # Garante que a pasta coverage exista
-          mkdir -p ${{ env.COVERAGE_DIR }}/Cms.BuildingBlocks.Domain.Tests/coverage
-
-          dotnet test \
-            tests/Cms.BuildingBlocks.Domain.Tests \
-            --configuration Release \
-            --no-build \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=${{ env.COVERAGE_DIR }}/Cms.BuildingBlocks.Domain.Tests/coverage/ \
-            /p:CoverletSourceRoot=$(pwd)/src \
-            /p:Exclude="[*.Tests]*"
+          # Executa todos os testes e gera cobertura em Cobertura
+          for proj in $(find tests -name '*.csproj'); do
+            echo "Running tests with coverage for $proj"
+            dotnet test "$proj" \
+              --configuration Release \
+              /p:CollectCoverage=true \
+              /p:CoverletOutputFormat=cobertura \
+              /p:CoverletOutput=$(dirname "$proj")/TestResults/coverage.cobertura.xml \
+              /p:Exclude="[*.Tests]*"
+          done
 
       - name: Debug coverage files
         run: |
           echo "Coverage XML files found:"
-          find ${{ env.COVERAGE_DIR }} -name '*.cobertura.xml'
+          find tests -name '*.cobertura.xml'
 
       - name: SonarCloud End
         env:
