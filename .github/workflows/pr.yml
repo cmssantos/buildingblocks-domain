@@ -57,14 +57,21 @@ jobs:
 
       - name: Run Tests with Coverage
         run: |
-          # Executa todos os testes .NET e gera cobertura Cobertura
-          dotnet test **/*.Tests.csproj \
-            --configuration Release \
-            --logger "trx" \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=$(pwd)/TestResults/ \
-            /p:Exclude="[*.Tests]*"
+          # Encontra todos os projetos de teste
+          TEST_PROJECTS=$(find . -type f -name "*.Tests.csproj")
+
+          echo "Found test projects:"
+          echo "$TEST_PROJECTS"
+
+          for proj in $TEST_PROJECTS; do
+            dotnet test "$proj" \
+              --configuration Release \
+              --logger "trx" \
+              /p:CollectCoverage=true \
+              /p:CoverletOutputFormat=cobertura \
+              /p:CoverletOutput=$(pwd)/TestResults/ \
+              /p:Exclude="[*.Tests]*"
+          done
 
       - name: Debug coverage files
         run: |
