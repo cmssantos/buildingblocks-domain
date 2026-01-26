@@ -10,7 +10,9 @@ env:
 
   SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
   SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
-  COVERAGE_RESULT_FILE: '**/TestResults/**/coverage.cobertura.xml'
+
+  COVERAGE_DIR: coverage
+  COVERAGE_FILE: coverage/coverage.cobertura.xml
 
 jobs:
 
@@ -124,13 +126,19 @@ jobs:
 
       - name: Test with coverage
         run: |
+          mkdir -p ${{ env.COVERAGE_DIR }}
+
           dotnet test \
             --configuration Release \
             --no-build \
-            --results-directory ./TestResults \
             /p:CollectCoverage=true \
-            /p:CoverletOutput=TestResults/ \
+            /p:CoverletOutput=${{ env.COVERAGE_DIR }}/ \
             /p:CoverletOutputFormat=cobertura
+
+      - name: Debug coverage file
+        run: |
+          echo "Generated coverage files:"
+          find ${{ env.COVERAGE_DIR }} -type f
 
       - name: SonarCloud End
         env:
