@@ -1,5 +1,5 @@
 # ==========================================================
-# Roslyn Analyzers - Clean Architecture & Quality
+# Roslyn & Sonar Analyzers - Clean Architecture & Quality
 # ==========================================================
 
 [*.cs]
@@ -7,93 +7,61 @@
 # ----------------------------------------------------------
 # Argument validation & null safety
 # ----------------------------------------------------------
-
-# Validate arguments of public methods
-dotnet_diagnostic.CA1062.severity = warning
-
-# Prefer throw expressions (clean guard clauses)
-dotnet_diagnostic.IDE0016.severity = suggestion
+dotnet_diagnostic.CA1062.severity = warning        # Validate arguments of public methods
+dotnet_diagnostic.IDE0016.severity = suggestion   # Prefer throw expressions (guard clauses)
 
 # ----------------------------------------------------------
 # Exceptions handling
 # ----------------------------------------------------------
-
-# Do not catch System.Exception
-dotnet_diagnostic.CA1031.severity = warning
-
-# Do not throw general exception types
-dotnet_diagnostic.CA2201.severity = warning
+dotnet_diagnostic.CA1031.severity = warning        # Avoid empty catch / don't catch System.Exception
+dotnet_diagnostic.CA2201.severity = warning        # Don't throw general exception types
 
 # ----------------------------------------------------------
 # Async & threading
 # ----------------------------------------------------------
-
-# Use ConfigureAwait(false) in libraries
-dotnet_diagnostic.CA2007.severity = warning
-
-# Do not block async code
-dotnet_diagnostic.CA1849.severity = warning
+dotnet_diagnostic.CA2007.severity = warning        # Use ConfigureAwait(false) in libraries
+dotnet_diagnostic.CA1849.severity = warning        # Do not block async code
 
 # ----------------------------------------------------------
 # Performance & allocations
 # ----------------------------------------------------------
-
-# Mark members as static when possible
-dotnet_diagnostic.CA1822.severity = suggestion
-
-# Use LoggerMessage delegates (logging performance)
-dotnet_diagnostic.CA1848.severity = warning
-
-# Avoid unnecessary allocations
-dotnet_diagnostic.CA1861.severity = suggestion
+dotnet_diagnostic.CA1822.severity = suggestion    # Mark members static when possible
+dotnet_diagnostic.CA1848.severity = warning       # LoggerMessage delegates
+dotnet_diagnostic.CA1861.severity = suggestion    # Avoid unnecessary allocations
 
 # ----------------------------------------------------------
 # Logging & observability
 # ----------------------------------------------------------
-
-# Logging message templates must be constant
-dotnet_diagnostic.CA2254.severity = error
+dotnet_diagnostic.CA2254.severity = error         # Logging message templates must be constant
 
 # ----------------------------------------------------------
 # Clean Architecture boundaries
 # ----------------------------------------------------------
-
-# Avoid public mutable fields
-dotnet_diagnostic.CA1051.severity = warning
-
-# Avoid static classes with state
-dotnet_diagnostic.CA2211.severity = warning
+dotnet_diagnostic.CA1051.severity = warning       # Avoid public mutable fields
+dotnet_diagnostic.CA2211.severity = warning       # Avoid static classes with state
 
 # ----------------------------------------------------------
 # Design & maintainability
 # ----------------------------------------------------------
-
-# Prefer readonly fields
-dotnet_diagnostic.CA1804.severity = suggestion
-
-# Avoid empty catch blocks
-dotnet_diagnostic.CA1031.severity = warning
+dotnet_diagnostic.CA1804.severity = suggestion    # Prefer readonly fields
+dotnet_diagnostic.CA1031.severity = warning       # Avoid empty catch blocks
 
 # ----------------------------------------------------------
 # Naming (DDD-friendly)
 # ----------------------------------------------------------
-
-# Avoid overly generic names in public APIs
-dotnet_diagnostic.CA1724.severity = suggestion
+dotnet_diagnostic.CA1724.severity = suggestion    # Avoid overly generic names in public APIs
 
 # ----------------------------------------------------------
 # Suppressions (intentional)
 # ----------------------------------------------------------
+dotnet_diagnostic.CA2227.severity = none          # DDD entities may expose setters internally
+dotnet_diagnostic.CA1810.severity = none          # Records/Value Objects may not need default ctor
 
-# DDD entities may expose setters internally
-dotnet_diagnostic.CA2227.severity = none
-
-# Records and Value Objects may not need default constructors
-dotnet_diagnostic.CA1810.severity = none
-
-# Makes specific Sonar warnings visible as issues.
-dotnet_diagnostic.S4136.severity = warning
-dotnet_diagnostic.S2326.severity = warning
-dotnet_diagnostic.S2094.severity = warning
-dotnet_diagnostic.S4035.severity = warning
-dotnet_diagnostic.S1144.severity = warning
+# ==========================================================
+# SonarAnalyzer C# - Warnings capturados no build
+# ==========================================================
+dotnet_diagnostic.S4136.severity = warning        # Method overloads should be adjacent
+dotnet_diagnostic.S2326.severity = warning        # Unused generic type in interface
+dotnet_diagnostic.S2094.severity = warning        # Empty record should be implemented or interface
+dotnet_diagnostic.S4035.severity = warning        # Seal class or implement IEqualityComparer<T>
+dotnet_diagnostic.S1144.severity = warning        # Unused private member/setter
