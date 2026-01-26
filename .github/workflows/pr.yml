@@ -47,7 +47,7 @@ jobs:
             /o:"${{ env.SONAR_ORGANIZATION }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.login="${SONAR_TOKEN}" \
-            /d:sonar.cs.opencover.reportsPaths="$(pwd)/TestResults/coverage.xml" \
+            /d:sonar.cs.opencover.reportsPaths="$(pwd)/TestResults/*.xml" \
             /d:sonar.pullrequest.key="${PR_NUMBER}" \
             /d:sonar.pullrequest.branch="${PR_BRANCH}" \
             /d:sonar.pullrequest.base="${PR_BASE}"
@@ -57,26 +57,27 @@ jobs:
 
       - name: Run Tests with Coverage
         run: |
-          # Encontra todos os projetos de teste
+          mkdir -p $(pwd)/TestResults
           TEST_PROJECTS=$(find . -type f -name "*.Tests.csproj")
-
           echo "Found test projects:"
           echo "$TEST_PROJECTS"
 
           for proj in $TEST_PROJECTS; do
+            OUTPUT_FILE=$(pwd)/TestResults/$(basename $proj .csproj).xml
+            echo "Running tests for $proj -> coverage: $OUTPUT_FILE"
             dotnet test "$proj" \
               --configuration Release \
-              --logger "trx" \
+              --no-build \
               /p:CollectCoverage=true \
               /p:CoverletOutputFormat=opencover \
-              /p:CoverletOutput=$(pwd)/TestResults/ \
+              /p:CoverletOutput="$OUTPUT_FILE" \
               /p:Exclude="[*.Tests]*"
           done
 
       - name: Debug coverage files
         run: |
           echo "Coverage XML files found:"
-          find $(pwd)/TestResults -name '*.cobertura.xml'
+          find $(pwd)/TestResults -name '*.xml'
 
       - name: SonarCloud End
         env:
