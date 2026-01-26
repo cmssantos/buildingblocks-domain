@@ -58,6 +58,27 @@ jobs:
             /p:Threshold=${{ env.COVERLET_MIN_THRESHOLD }} \
             /p:ThresholdType=line
 
+      - name: Code Coverage Summary Report
+        if: matrix.dotnet-version == '10.0.x' # Only run on primary version
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: ${{ env.COVERAGE_RESULT_FILE }}
+          badge: true
+          fail_below_min: true
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: '85 95'
+
+      - name: Add Coverage PR Comment
+        if: matrix.dotnet-version == '10.0.x' && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: code-coverage-results.md
+
       - name: Upload coverage report
         if: matrix.dotnet-version == '10.0.x' # Upload only once for the primary version
         uses: actions/upload-artifact@v4
