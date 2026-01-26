@@ -16,7 +16,7 @@ env:
   COVERLET_MIN_THRESHOLD: 85
   COVERAGE_RESULT_FILE: "**/TestResults/**/coverage.cobertura.xml"
   COVERLET_EXCLUDE: '[*.Tests]*,[*]Program'
-  COVERLET_EXCLUDE_BY_FILE: '**/Migrations/*,**/*.g.cs'
+  COVERLET_EXCLUDE_BY_FILE: '**/Migrations/*;**/*.g.cs'
 
 jobs:
   build-and-test:
@@ -59,8 +59,8 @@ jobs:
             /p:CoverletOutputFormat=cobertura \
             /p:Threshold=${{ env.COVERLET_MIN_THRESHOLD }} \
             /p:ThresholdType=line \
-            /p:Exclude="${{ env.COVERLET_EXCLUDE }}" \
-            /p:ExcludeByFile="${{ env.COVERLET_EXCLUDE_BY_FILE }}"
+            /p:Exclude='${{ env.COVERLET_EXCLUDE }}' \
+            /p:ExcludeByFile='${{ env.COVERLET_EXCLUDE_BY_FILE }}'
 
       - name: Upload coverage report
         if: matrix.dotnet-version == '10.0.x' # Upload only once for the primary version
