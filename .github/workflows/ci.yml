@@ -13,7 +13,7 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
   COVERLET_MIN_THRESHOLD: 85
-  COVERAGE_RESULT_FILE: '**/TestResults/**/coverage.cobertura.xml'
+  COVERAGE_RESULT_FILE: '**/TestResults/coverage.cobertura.xml'
 
 jobs:
 
@@ -57,7 +57,6 @@ jobs:
             /p:ThresholdType=line
 
       - name: Upload coverage artifact
-        if: matrix.dotnet-version == '10.0.x'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
