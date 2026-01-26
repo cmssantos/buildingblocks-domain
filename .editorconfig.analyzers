@@ -1,0 +1,92 @@
+# ==========================================================
+# Roslyn Analyzers - Clean Architecture & Quality
+# ==========================================================
+
+[*.cs]
+
+# ----------------------------------------------------------
+# Argument validation & null safety
+# ----------------------------------------------------------
+
+# Validate arguments of public methods
+dotnet_diagnostic.CA1062.severity = warning
+
+# Prefer throw expressions (clean guard clauses)
+dotnet_diagnostic.IDE0016.severity = suggestion
+
+# ----------------------------------------------------------
+# Exceptions handling
+# ----------------------------------------------------------
+
+# Do not catch System.Exception
+dotnet_diagnostic.CA1031.severity = warning
+
+# Do not throw general exception types
+dotnet_diagnostic.CA2201.severity = warning
+
+# ----------------------------------------------------------
+# Async & threading
+# ----------------------------------------------------------
+
+# Use ConfigureAwait(false) in libraries
+dotnet_diagnostic.CA2007.severity = warning
+
+# Do not block async code
+dotnet_diagnostic.CA1849.severity = warning
+
+# ----------------------------------------------------------
+# Performance & allocations
+# ----------------------------------------------------------
+
+# Mark members as static when possible
+dotnet_diagnostic.CA1822.severity = suggestion
+
+# Use LoggerMessage delegates (logging performance)
+dotnet_diagnostic.CA1848.severity = warning
+
+# Avoid unnecessary allocations
+dotnet_diagnostic.CA1861.severity = suggestion
+
+# ----------------------------------------------------------
+# Logging & observability
+# ----------------------------------------------------------
+
+# Logging message templates must be constant
+dotnet_diagnostic.CA2254.severity = error
+
+# ----------------------------------------------------------
+# Clean Architecture boundaries
+# ----------------------------------------------------------
+
+# Avoid public mutable fields
+dotnet_diagnostic.CA1051.severity = warning
+
+# Avoid static classes with state
+dotnet_diagnostic.CA2211.severity = warning
+
+# ----------------------------------------------------------
+# Design & maintainability
+# ----------------------------------------------------------
+
+# Prefer readonly fields
+dotnet_diagnostic.CA1804.severity = suggestion
+
+# Avoid empty catch blocks
+dotnet_diagnostic.CA1031.severity = warning
+
+# ----------------------------------------------------------
+# Naming (DDD-friendly)
+# ----------------------------------------------------------
+
+# Avoid overly generic names in public APIs
+dotnet_diagnostic.CA1724.severity = suggestion
+
+# ----------------------------------------------------------
+# Suppressions (intentional)
+# ----------------------------------------------------------
+
+# DDD entities may expose setters internally
+dotnet_diagnostic.CA2227.severity = none
+
+# Records and Value Objects may not need default constructors
+dotnet_diagnostic.CA1810.severity = none

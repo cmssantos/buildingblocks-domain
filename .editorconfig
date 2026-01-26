@@ -1,39 +1,46 @@
 root = true
 
-# =========================
+# ==========================================================
 # Global
-# =========================
+# ==========================================================
 [*]
 indent_style = space
 indent_size = 4
+tab_width = 4
 end_of_line = lf
 charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-# =========================
-# C# rules
-# =========================
+# ==========================================================
+# C# Files
+# ==========================================================
 [*.cs]
 
-# Usings
+# -------------------------
+# Using directives
+# -------------------------
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = true
 
 # -------------------------
-# Braces / If style
+# Braces & control flow
 # -------------------------
 
-# NÃO exigir chaves para blocos de uma linha (guard clauses)
+# Guard clauses e early-exit (estilo moderno)
 csharp_prefer_braces = false:suggestion
 
-# Preferir if simples para early-exit
+# Preferir using statement simples (C# 8+)
 csharp_style_prefer_simple_using_statement = true:suggestion
 
+# Preferir early-return
+csharp_style_prefer_pattern_matching = true:suggestion
+
 # -------------------------
-# New lines / indentation
+# New lines & indentation
 # -------------------------
 csharp_new_line_before_open_brace = all
+
 csharp_indent_case_contents = true
 csharp_indent_switch_labels = true
 csharp_indent_labels = one_less_than_current
@@ -43,6 +50,8 @@ csharp_indent_labels = one_less_than_current
 # -------------------------
 csharp_style_expression_bodied_methods = when_on_single_line:suggestion
 csharp_style_expression_bodied_properties = when_on_single_line:suggestion
+csharp_style_expression_bodied_constructors = false:suggestion
+csharp_style_expression_bodied_accessors = when_on_single_line:suggestion
 
 # -------------------------
 # Var usage
@@ -50,3 +59,32 @@ csharp_style_expression_bodied_properties = when_on_single_line:suggestion
 csharp_style_var_for_built_in_types = true:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
 csharp_style_var_elsewhere = false:suggestion
+
+# -------------------------
+# Nullability & safety
+# -------------------------
+csharp_style_throw_expression = true:suggestion
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+
+# -------------------------
+# Readability & Clean Code
+# -------------------------
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_explicit_tuple_names = true:suggestion
+
+# Preferir interpolação
+dotnet_style_prefer_interpolated_string = true:suggestion
+
+# -------------------------
+# Naming (base limpa)
+# -------------------------
+dotnet_naming_rule.private_fields_should_be_camel_case.severity = suggestion
+dotnet_naming_rule.private_fields_should_be_camel_case.symbols = private_fields
+dotnet_naming_rule.private_fields_should_be_camel_case.style = camel_case
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_style.camel_case.capitalization = camel_case

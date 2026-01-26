@@ -1,9 +1,12 @@
 using Cms.BuildingBlocks.Domain.Abstractions;
 using Cms.BuildingBlocks.Domain.Tests.Abstractions.Dummies;
+
 using Shouldly;
+
 using Xunit;
 
 namespace Cms.BuildingBlocks.Domain.Tests.Abstractions;
+
 public sealed class EntityIdTests
 {
     [Fact]

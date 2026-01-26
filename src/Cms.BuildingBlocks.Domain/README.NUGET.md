@@ -10,9 +10,11 @@ Pure **Domain Building Blocks** for .NET applications using **DDD**, **Clean Arc
 
 - **AggregateRoot** base with versioning support
 - **OwnedAggregateRoot** for user / tenant owned aggregates
-- **Entity** base with built-in Domain Events
+- **Entity** base with built-in Domain Events and **Equality by ID**
 - **Strongly-typed Entity IDs**
 - **Value Objects**
+- **Result Pattern** for explicit error handling
+- **Standard Repositories & UnitOfWork**
 - **Domain Errors & Guard Clauses**
 - **Audit-friendly abstractions**
 - **Zero infrastructure dependencies**
@@ -42,12 +44,14 @@ public sealed class Category
         Name = name;
     }
 
-    public static Category Create(
+    public static Result<Category> Create(
         CategoryId id,
         UserId ownerId,
         CategoryName name)
     {
-        Guard.AgainstNull(name, CategoryErrors.NameRequired);
+        // Guard clauses or manual checks
+        if (string.IsNullOrWhiteSpace(name.Value))
+            return Result.Failure<Category>(new DomainError("NameRequired"));
 
         var category = new Category(id, ownerId, name);
         category.Raise(new CategoryCreated(id, ownerId, DateTime.UtcNow));

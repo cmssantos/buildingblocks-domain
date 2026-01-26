@@ -49,10 +49,12 @@ src
 
 - **AggregateRoot** base with versioning support
 - **OwnedAggregateRoot** for user / tenant owned aggregates
-- **Entity** base with built-in Domain Events
+- **Entity** base with built-in Domain Events and **Equality by ID**
 - **Strongly-typed Entity IDs**
 - **Value Object base**
-- **Explicit Domain Errors & Exceptions**
+- **Result Pattern** for explicit success/failure handling
+- **Standard Repository & UnitOfWork interfaces**
+- **Explicit Domain Errors**
 - **Guard Clauses with business semantics**
 - **Audit-friendly abstractions**
 - **Zero infrastructure dependencies**
@@ -73,7 +75,7 @@ dotnet add package Cms.BuildingBlocks.Domain
 
 ```csharp
 public abstract class AggregateRoot<TId> : Entity<TId>
-    where TId : IEntityId
+    where TId : class, IEntityId
 {
     public int Version { get; private set; }
 }
@@ -86,7 +88,7 @@ public abstract class AggregateRoot<TId> : Entity<TId>
 ```csharp
 public abstract class OwnedAggregateRoot<TId, TOwnerId>
     : AggregateRoot<TId>
-    where TId : IEntityId
+    where TId : class, IEntityId
     where TOwnerId : IEntityId
 {
     public TOwnerId OwnerId { get; protected init; } = default!;
@@ -103,20 +105,38 @@ and **multi-tenant applications**.
 
 ### Entity Base & Domain Events
 
+Entities now implement `IEquatable<Entity<TId>>` and are compared by **ID**, not reference.
+
 ```csharp
-public abstract class Entity<TId>
-    where TId : IEntityId
+public abstract class Entity<TId> : IEquatable<Entity<TId>>
+    where TId : class, IEntityId
 {
     public TId Id { get; protected init; } = default!;
 
     private readonly List<IDomainEvent> _domainEvents = [];
-    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents;
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
     protected void Raise(IDomainEvent domainEvent)
         => _domainEvents.Add(domainEvent);
 
     public void ClearDomainEvents()
         => _domainEvents.Clear();
+}
+```
+
+---
+
+### Result Pattern (No Exceptions)
+
+Instead of throwing exceptions for validation errors, use the `Result` pattern.
+
+```csharp
+public class Result<TValue>
+{
+    public bool IsSuccess { get; }
+    public bool IsFailure { get; }
+    public TValue Value { get; }
+    public DomainError Error { get; }
 }
 ```
 
@@ -157,6 +177,21 @@ public abstract record ValueObject;
 
 ---
 
+### Repositories & Unit of Work
+
+Standard interfaces to be implemented in the Infrastructure layer.
+
+```csharp
+public interface IRepository<TEntity> where TEntity : class { }
+
+public interface IUnitOfWork
+{
+    Task SaveChangesAsync(CancellationToken cancellationToken = default);
+}
+```
+
+---
+
 ## 🛡 Guard Clauses
 
 ```csharp
@@ -166,17 +201,16 @@ Guard.AgainstNegativeOrZero(amount, TransactionErrors.InvalidAmount);
 
 ---
 
-## ❌ Domain Errors & Exceptions
+## ❌ Domain Errors
 
 ```csharp
-public sealed class DomainError(
-    string code,
-    IReadOnlyDictionary<string, string?>? metadata = null);
-```
-
-```csharp
-public sealed class DomainException(DomainError error)
-    : Exception(error.Code);
+public record DomainError(
+    string Code,
+    IReadOnlyDictionary<string, string?>? Metadata = null)
+{
+    public static readonly DomainError None = new(string.Empty);
+    public static readonly DomainError NullValue = new("Error.NullValue");
+}
 ```
 
 ---
@@ -184,8 +218,21 @@ public sealed class DomainException(DomainError error)
 ## 🧪 Complete Example — User-Owned Category Aggregate
 
 ```csharp
+// 1. Define stronger IDs
 public sealed record CategoryId(Guid Value) : EntityId<Guid>(Value);
 public sealed record UserId(Guid Value) : EntityId<Guid>(Value);
+
+// 2. Define Domain Events
+public sealed record CategoryCreated(CategoryId Id, UserId OwnerId, DateTime OccurredOn) : IDomainEvent;
+public sealed record CategoryArchived(CategoryId Id, UserId OwnerId, DateTime OccurredOn) : IDomainEvent;
+
+// 3. Define Errors
+public static class CategoryErrors
+{
+    public static readonly DomainError NameRequired = new("Category.NameRequired");
+    public static readonly DomainError IdRequired = new("Category.IdRequired");
+    public static readonly DomainError AlreadyArchived = new("Category.AlreadyArchived");
+}
 
 public sealed record CategoryName(string Value) : ValueObject
 {
@@ -207,22 +254,30 @@ public sealed class Category
         Name = name;
     }
 
-    public static Category Create(
+    public static Result<Category> Create(
         CategoryId id,
         UserId ownerId,
         CategoryName name)
     {
+        // Example check returning Failure
+        if (id == null)
+            return Result.Failure<Category>(CategoryErrors.IdRequired);
+
         var category = new Category(id, ownerId, name);
         category.Raise(new CategoryCreated(id, ownerId, DateTime.UtcNow));
-        return category;
+
+        return category; // Implicit conversion to Result<Category>
     }
 
-    public void Archive()
+    public Result Archive()
     {
-        if (IsArchived) return;
+        if (IsArchived)
+            return Result.Failure(CategoryErrors.AlreadyArchived);
 
         IsArchived = true;
         Raise(new CategoryArchived(Id, OwnerId, DateTime.UtcNow));
+
+        return Result.Success();
     }
 }
 ```
