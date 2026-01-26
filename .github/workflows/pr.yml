@@ -38,7 +38,7 @@ jobs:
           fi
 
       - name: Validate PR title (Conventional Commits)
-        uses: amannn/action-semantic-pull-request@8e3c3b7c8a8b2a1c3a9d6a6c64c8e1f4c9b7e9b
+        uses: amannn/action-semantic-pull-request@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
