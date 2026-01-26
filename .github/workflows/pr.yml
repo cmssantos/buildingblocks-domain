@@ -12,8 +12,9 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
-  SONAR_PROJECT_KEY: cleudice_myproject
-  SONAR_ORGANIZATION: cmmsantos
+  SONAR_PROJECT_KEY: ${{ env.SONAR_PROJECT_KEY }}
+  SONAR_ORGANIZATION: ${{ env.SONAR_ORGANIZATION }}
+  SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
   COVERAGE_RESULT_FILE: '**/TestResults/**/coverage.cobertura.xml'
 
 jobs:
@@ -78,11 +79,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Download coverage artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
