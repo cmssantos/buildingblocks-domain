@@ -13,9 +13,8 @@ on:
       - develop
 
 env:
-  DOTNET_VERSION: 10.0.x
   COVERLET_MIN_THRESHOLD: 85
-  COVERAGE_RESULT_FILE: **/TestResults/**/coverage.cobertura.xml
+  COVERAGE_RESULT_FILE: "**/TestResults/**/coverage.cobertura.xml"
 
 jobs:
   build-and-test:
@@ -49,16 +48,17 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Test & Coverage
-        run: >
-          dotnet test
-          --configuration Release
-          --no-build
-          --collect:"XPlat Code Coverage"
-          /p:CollectCoverage=true
-          /p:CoverletOutputFormat=cobertura
-          /p:Threshold=${{ env.COVERLET_MIN_THRESHOLD }}
-          /p:ThresholdType=line
+      - name: Test with Coverage (Threshold enforced)
+        run: |
+          dotnet test \
+            --configuration Release \
+            --no-build \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=cobertura \
+            /p:Threshold=${{ env.COVERLET_MIN_THRESHOLD }} \
+            /p:ThresholdType=line \
+            /p:Exclude="[*.Tests]*,[*]Program" \
+            /p:ExcludeByFile="**/Migrations/*;**/*.g.cs"
 
       - name: Upload coverage report
         if: matrix.dotnet-version == '10.0.x' # Upload only once for the primary version
