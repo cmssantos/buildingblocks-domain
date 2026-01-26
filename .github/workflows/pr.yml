@@ -133,7 +133,9 @@ jobs:
             --no-build \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=coverage/
+            /p:CoverletOutput=coverage/ \
+            /p:CoverletSourceRoot=$(pwd)/src \
+            /p:Exclude="[*.Tests]*"
 
       - name: Debug coverage files
         run: |
