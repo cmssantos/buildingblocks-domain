@@ -1,0 +1,64 @@
+name: .NET CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/*'
+      - 'hotfix/*'
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+  COVERLET_MIN_THRESHOLD: 85
+  COVERLET_EXCLUDE: '[*.Tests]*,[*]Program'
+  COVERLET_EXCLUDE_BY_FILE: '**/Migrations/*'
+  COVERAGE_RESULT_FILE: '**/TestResults/**/coverage.cobertura.xml'
+
+jobs:
+
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dotnet-version: [ '8.0.x', '10.0.x' ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test with coverage
+        run: |
+          dotnet test \
+            --configuration Release \
+            --no-build \
+            /p:CollectCoverage=true \
+            /p:CoverletOutput=TestResults/ \
+            /p:CoverletOutputFormat=cobertura \
+            /p:Threshold=${{ env.COVERLET_MIN_THRESHOLD }} \
+            /p:ThresholdType=line \
+            /p:Exclude="${{ env.COVERLET_EXCLUDE }}" \
+            /p:ExcludeByFile="${{ env.COVERLET_EXCLUDE_BY_FILE }}"
+
+      - name: Upload coverage artifact
+        if: matrix.dotnet-version == '10.0.x'
