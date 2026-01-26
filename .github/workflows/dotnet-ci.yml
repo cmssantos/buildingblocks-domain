@@ -23,6 +23,9 @@ env:
   COVERLET_EXCLUDE_BY_FILE: '**/Migrations/*'
   COVERAGE_RESULT_FILE: '**/TestResults/**/coverage.cobertura.xml'
 
+  SONAR_PROJECT_KEY: cleudice_myproject
+  SONAR_ORGANIZATION: cleudice
+
 jobs:
 
   # ------------------------------------------------------------------
@@ -34,6 +37,15 @@ jobs:
     if: github.event_name == 'pull_request'
 
     steps:
+      - name: Validate branch name
+        run: |
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+
+          if [[ ! "$BRANCH" =~ ^(main|develop|(feature|bugfix|hotfix)/[a-z0-9]+(-[a-z0-9]+)*|release/[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "❌ Invalid branch name: $BRANCH"
+            exit 1
+          fi
+
       - name: Validate PR title (Conventional Commits)
         uses: amannn/action-semantic-pull-request@v5
         env:
@@ -145,3 +157,55 @@ jobs:
           name: coverage-report
           path: ${{ env.COVERAGE_RESULT_FILE }}
           if-no-files-found: ignore
+
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: |
+            ${{ runner.os }}-sonar
+
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Add dotnet tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: SonarCloud Begin
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:"${{ env.SONAR_PROJECT_KEY }}" \
+            /o:"${{ env.SONAR_ORGANIZATION }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.login="${SONAR_TOKEN}" \
+            /d:sonar.cs.cobertura.reportsPaths="${{ env.COVERAGE_RESULT_FILE }}" \
+            /d:sonar.pullrequest.key="${{ github.event.pull_request.number }}" \
+            /d:sonar.pullrequest.branch="${{ github.head_ref }}" \
+            /d:sonar.pullrequest.base="${{ github.base_ref }}"
+
+      - name: Build (required by Sonar)
+        run: dotnet build --configuration Release
+
+      - name: SonarCloud End
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end
