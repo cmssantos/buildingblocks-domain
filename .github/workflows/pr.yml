@@ -11,8 +11,8 @@ env:
   SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
   SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
 
-  COVERAGE_DIR: coverage
-  COVERAGE_FILE: coverage/coverage.cobertura.xml
+  COVERAGE_DIR: tests/Cms.BuildingBlocks.Domain.Tests/coverage
+  COVERAGE_FILE: tests/Cms.BuildingBlocks.Domain.Tests/coverage/coverage.cobertura.xml
 
 jobs:
 
@@ -138,7 +138,7 @@ jobs:
       - name: Debug coverage file
         run: |
           echo "Generated coverage files:"
-          find ${{ env.COVERAGE_DIR }} -type f
+          ls -l ${{ env.COVERAGE_DIR }}
 
       - name: SonarCloud End
         env:
