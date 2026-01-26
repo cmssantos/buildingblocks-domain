@@ -71,4 +71,22 @@ public class ResultTests
         result.IsSuccess.ShouldBeFalse();
         result.Error.ShouldBe(error);
     }
+
+    [Fact]
+    public void Constructor_ShouldThrow_WhenSuccessWithError()
+    {
+        var error = new DomainError("Error");
+        Should.Throw<InvalidOperationException>(() => new TestResult(true, error));
+    }
+
+    [Fact]
+    public void Constructor_ShouldThrow_WhenFailureWithNoError()
+    {
+        Should.Throw<InvalidOperationException>(() => new TestResult(false, DomainError.None));
+    }
+
+    private class TestResult : Result
+    {
+        public TestResult(bool isSuccess, DomainError error) : base(isSuccess, error) { }
+    }
 }

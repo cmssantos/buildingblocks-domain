@@ -56,8 +56,25 @@ public class EntityEqualityTests
     {
         var id = new TestEntityId(Guid.NewGuid());
         var entity1 = new TestEntity(id);
-        // Assuming we had another entity type, but for now checking against object or just verifying type check logic works roughly
-        // If we strictly cannot create another entity with same ID but different type easily without defining one.
-        // But the logic `GetType() != other.GetType()` handles it.
+        var entityDifferentType = new AnotherTestEntity(id);
+
+        entity1.Equals(entityDifferentType).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Equals_ShouldReturnTrue_WhenReferenceIsSame()
+    {
+        var entity1 = new TestEntity(new TestEntityId(Guid.NewGuid()));
+        var entity2 = entity1;
+
+        entity1.Equals(entity2).ShouldBeTrue();
+    }
+
+    private class AnotherTestEntity : Entity<TestEntityId>
+    {
+        public AnotherTestEntity(TestEntityId id)
+        {
+            Id = id;
+        }
     }
 }
