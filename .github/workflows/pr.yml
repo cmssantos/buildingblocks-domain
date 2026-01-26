@@ -11,8 +11,8 @@ env:
   SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
   SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
 
-  COVERAGE_DIR: tests/Cms.BuildingBlocks.Domain.Tests/coverage
-  COVERAGE_FILE: tests/Cms.BuildingBlocks.Domain.Tests/coverage/coverage.cobertura.xml
+  COVERAGE_DIR: tests
+  COVERAGE_FILE_GLOB: '**/coverage/*.cobertura.xml'
 
 jobs:
 
@@ -113,7 +113,7 @@ jobs:
             /o:"${{ env.SONAR_ORGANIZATION }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.login="${SONAR_TOKEN}" \
-            /d:sonar.cs.cobertura.reportsPaths="${{ env.COVERAGE_FILE }}" \
+            /d:sonar.cs.cobertura.reportsPaths="${{ env.COVERAGE_FILE_GLOB }}" \
             /d:sonar.pullrequest.key="${PR_NUMBER}" \
             /d:sonar.pullrequest.branch="${PR_BRANCH}" \
             /d:sonar.pullrequest.base="${PR_BASE}"
@@ -126,19 +126,19 @@ jobs:
 
       - name: Test with coverage
         run: |
-          mkdir -p ${{ env.COVERAGE_DIR }}
+          find ${{ env.COVERAGE_DIR }} -name coverage -type d -exec mkdir -p {} \;
 
           dotnet test \
             --configuration Release \
             --no-build \
             /p:CollectCoverage=true \
-            /p:CoverletOutput=${{ env.COVERAGE_DIR }}/ \
-            /p:CoverletOutputFormat=cobertura
+            /p:CoverletOutputFormat=cobertura \
+            /p:CoverletOutput=coverage/
 
-      - name: Debug coverage file
+      - name: Debug coverage files
         run: |
-          echo "Generated coverage files:"
-          ls -l ${{ env.COVERAGE_DIR }}
+          echo "Coverage XML files found:"
+          find ${{ env.COVERAGE_DIR }} -name '*.cobertura.xml'
 
       - name: SonarCloud End
         env:
