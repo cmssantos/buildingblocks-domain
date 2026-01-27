@@ -5,16 +5,16 @@ on:
     workflows: [".NET CI"]
     types:
       - completed
+    branches:
+      - main
+      - develop
 
 jobs:
   sonarcloud-analysis:
     name: SonarCloud Analysis
-    # Só executa se o workflow anterior foi bem-sucedido e se não for um push para main/develop
-    # (a análise de push é feita em outro workflow, geralmente)
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event != 'push' }}
     runs-on: ubuntu-latest
     permissions:
-      # Permissões necessárias para o SonarScanner decorar o Pull Request
       contents: read
       pull-requests: write
 
@@ -22,24 +22,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # Faz o checkout do commit exato que acionou o workflow de CI
           ref: ${{ github.event.workflow_run.head_sha }}
-          fetch-depth: 0 # Necessário para o Sonar analisar o histórico do branch
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x' # Use a versão LTS mais recente para a análise
+          dotnet-version: '10.0.x'
 
       - name: Download coverage report
         uses: actions/download-artifact@v4
         with:
           name: coverage-for-sonar
-          # O ID da execução do workflow que acionou este
           run-id: ${{ github.event.workflow_run.id }}
           path: ./TestResults/
 
-      - name: 🔍 Diagnostic - Verify downloaded coverage file
+      - name: Diagnostic - Verify downloaded coverage file
         run: ls -R ./TestResults
 
       - name: Cache SonarScanner
@@ -57,7 +55,7 @@ jobs:
 
       - name: SonarCloud Begin
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Usado para decorar o PR
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           dotnet sonarscanner begin \
@@ -72,7 +70,7 @@ jobs:
             /d:sonar.pullrequest.base="${{ github.event.workflow_run.pull_requests[0].base.ref }}"
 
       - name: Build Solution (for analysis only )
-        run: dotnet build --no-restore # Não precisa restaurar, o checkout é limpo
+        run: dotnet build --no-restore
 
       - name: SonarCloud End
         env:
