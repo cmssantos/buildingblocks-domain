@@ -1,33 +1,54 @@
 name: PR Quality Gates
 
 on:
-  pull_request:
-    branches: [ main, develop ]
-
-env:
-  DOTNET_NOLOGO: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: true
-
-  SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
-  SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+  # Aciona este workflow APENAS quando o workflow '.NET CI' for concluído com sucesso
+  workflow_run:
+    workflows: [".NET CI"]
+    types:
+      - completed
 
 jobs:
-
-  sonarcloud:
+  sonarcloud-analysis:
     name: SonarCloud Analysis
+    # Só executa se o workflow anterior foi bem-sucedido e se não for um push para main/develop
+    # (a análise de push é feita em outro workflow, geralmente)
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event != 'push' }}
     runs-on: ubuntu-latest
     permissions:
+      # Permissões necessárias para o SonarScanner decorar o Pull Request
       contents: read
+      pull-requests: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          # Faz o checkout do commit exato que acionou o workflow de CI
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0 # Necessário para o Sonar analisar o histórico do branch
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: '10.0.x' # Use a versão LTS mais recente para a análise
+
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-for-sonar
+          # O ID da execução do workflow que acionou este
+          run-id: ${{ github.event.workflow_run.id }}
+          path: ./TestResults/
+
+      - name: 🔍 Diagnostic - Verify downloaded coverage file
+        run: ls -R ./TestResults
+
+      - name: Cache SonarScanner
+        uses: actions/cache@v4
+        with:
+          path: ~/.dotnet/tools
+          key: ${{ runner.os }}-sonarscanner
+          restore-keys: ${{ runner.os }}-sonarscanner
 
       - name: Install SonarScanner
         run: dotnet tool install --global dotnet-sonarscanner
@@ -37,51 +58,24 @@ jobs:
 
       - name: SonarCloud Begin
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Usado para decorar o PR
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_BRANCH: ${{ github.head_ref }}
-          PR_BASE: ${{ github.base_ref }}
         run: |
           dotnet sonarscanner begin \
-            /k:"${{ env.SONAR_PROJECT_KEY }}" \
-            /o:"${{ env.SONAR_ORGANIZATION }}" \
+            /k:"${{ vars.SONAR_PROJECT_KEY }}" \
+            /o:"${{ vars.SONAR_ORGANIZATION }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.login="${SONAR_TOKEN}" \
-            /d:sonar.cs.opencover.reportsPaths="$(pwd)/TestResults/*.xml" \
-            /d:sonar.cs.msbuild.enable=true \
-            /d:sonar.cs.roslyn.ignoreIssues=false \
-            /d:sonar.pullrequest.key="${PR_NUMBER}" \
-            /d:sonar.pullrequest.branch="${PR_BRANCH}" \
-            /d:sonar.pullrequest.base="${PR_BASE}"
+            /d:sonar.cs.opencover.reportsPaths="./TestResults/coverage.opencover.xml" \
+            /d:sonar.pullrequest.provider="github" \
+            /d:sonar.pullrequest.github.repository="${{ github.repository }}" \
+            /d:sonar.pullrequest.key="${{ github.event.workflow_run.pull_requests[0].number }}" \
+            /d:sonar.pullrequest.branch="${{ github.event.workflow_run.pull_requests[0].head.ref }}" \
+            /d:sonar.pullrequest.base="${{ github.event.workflow_run.pull_requests[0].base.ref }}"
 
-      - name: Build Solution
-        run: dotnet build -c Release /p:RunAnalyzersDuringBuild=true /p:RunAnalyzers=true
-
-      - name: Run Tests with Coverage
-        run: |
-          mkdir -p $(pwd)/TestResults
-          TEST_PROJECTS=$(find . -type f -name "*.Tests.csproj")
-          echo "Found test projects:"
-          echo "$TEST_PROJECTS"
-
-          for proj in $TEST_PROJECTS; do
-            OUTPUT_FILE=$(pwd)/TestResults/$(basename $proj .csproj).xml
-            echo "Running tests for $proj -> coverage: $OUTPUT_FILE"
-            dotnet test "$proj" \
-              --configuration Release \
-              --no-build \
-              /p:CollectCoverage=true \
-              /p:CoverletOutputFormat=opencover \
-              /p:CoverletOutput="$OUTPUT_FILE" \
-              /p:Exclude="[*.Tests]*"
-          done
-
-      - name: Debug coverage files
-        run: |
-          echo "Coverage XML files found:"
-          find $(pwd)/TestResults -name '*.xml'
+      - name: Build Solution (for analysis only )
+        run: dotnet build --no-restore # Não precisa restaurar, o checkout é limpo
 
       - name: SonarCloud End
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: dotnet sonarscanner end /d:sonar.login="${SONAR_TOKEN}"
+        run: dotnet sonarscanner end
