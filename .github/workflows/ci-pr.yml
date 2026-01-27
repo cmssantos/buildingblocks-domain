@@ -58,7 +58,6 @@ jobs:
             /d:sonar.pullrequest.base="${PR_BASE}" \
             /d:sonar.tests="**/*Tests/**,**/*.Tests/**" \
             /d:sonar.test.inclusions="**/*Tests/**/*.cs" \
-            /d:sonar.coverage.exclusions="**/*Tests/**/*.cs"
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
