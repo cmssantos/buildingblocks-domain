@@ -71,31 +71,30 @@ jobs:
       - name: Get Version
         id: get-version
         run: |
-          echo "GITHUB_REF = $GITHUB_REF"
+            echo "GITHUB_REF = $GITHUB_REF"
 
-          # 1️⃣ Verifica se version.json existe e NBGV consegue rodar
-          if git ls-files | grep -q version.json; then
-            BASE_VERSION=$(nbgv get-version /version 2>/dev/null || echo "2.0.0")
-          else
+            # Pega a versão base do version.json
+            if [ -f version.json ]; then
+            BASE_VERSION=$(nbgv get-version 2>/dev/null || echo "2.0.0")
+            else
             BASE_VERSION="2.0.0"
-          fi
+            fi
 
-          # 2️⃣ Determina o sufixo de acordo com o branch
-          if [[ $GITHUB_REF == refs/heads/feature/* ]]; then
-              VERSION="${BASE_VERSION}-alpha-feature.${GITHUB_RUN_NUMBER}"
-          elif [[ $GITHUB_REF == refs/heads/hotfix/* ]]; then
-              VERSION="${BASE_VERSION}-alpha-hotfix.${GITHUB_RUN_NUMBER}"
-          elif [[ $GITHUB_REF == refs/heads/develop ]]; then
-              VERSION="${BASE_VERSION}-alpha.${GITHUB_RUN_NUMBER}"
-          elif [[ $GITHUB_REF == refs/heads/release/* ]]; then
-              VERSION="${BASE_VERSION}-rc.${GITHUB_RUN_NUMBER}"
-          else
-              VERSION="$BASE_VERSION"
-          fi
+            # Determina o sufixo de acordo com o branch
+            if [[ $GITHUB_REF == refs/heads/feature/* ]]; then
+                VERSION="${BASE_VERSION}-alpha-feature.${GITHUB_RUN_NUMBER}"
+            elif [[ $GITHUB_REF == refs/heads/hotfix/* ]]; then
+                VERSION="${BASE_VERSION}-alpha-hotfix.${GITHUB_RUN_NUMBER}"
+            elif [[ $GITHUB_REF == refs/heads/develop ]]; then
+                VERSION="${BASE_VERSION}-alpha.${GITHUB_RUN_NUMBER}"
+            elif [[ $GITHUB_REF == refs/heads/release/* ]]; then
+                VERSION="${BASE_VERSION}-rc.${GITHUB_RUN_NUMBER}"
+            else
+                VERSION="$BASE_VERSION"
+            fi
 
-          # 3️⃣ Exporta a versão para os próximos steps
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "Determined version: $VERSION"
+            echo "VERSION=$VERSION" >> $GITHUB_ENV
+            echo "Determined version: $VERSION"
 
   # 3️⃣ Pre-release Pack for feature/hotfix
   pre-release-pack:
