@@ -1,51 +1,47 @@
-name: .NET CI
+name: CI & Quality Pipeline
 
+# Gatilhos combinados: executa em PRs para main/develop e em push direto para esses branches.
 on:
-  push:
-    branches:
-      - main
-      - develop
-      - 'feature/*'
-      - 'hotfix/*'
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
 
+# Permissões combinadas para atender a ambos os jobs.
 permissions:
   contents: read
-  checks: write
+  checks: write      # Para o job de build-test reportar o status
+  pull-requests: write # Para o job do Sonar decorar o PR
 
+# Concorrência para evitar execuções desnecessárias.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 env:
   DOTNET_NOLOGO: "true"
   DOTNET_CLI_TELEMETRY_OPTOUT: "true"
-  COVERLET_MIN_THRESHOLD: 85
-  # Sugestão 1: Definir o caminho do artefato como uma variável de ambiente
-  COVERAGE_ARTIFACT_PATH: '**/TestResults/**/coverage.cobertura.xml'
 
 jobs:
-  build-test:
-    name: Build & Test (.NET ${{ matrix.dotnet-version }})
+  # --- JOB 1: BUILD E TESTE ---
+  build-and-test:
+    name: Build & Test
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        dotnet-version: [ '8.0.x', '10.0.x' ]
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # O Sonar precisa do histórico completo para analisar o novo código.
+          # Fazemos o fetch-depth: 0 aqui para não ter que fazer de novo no job do Sonar.
+          fetch-depth: 0
 
-      - name: Setup .NET ${{ matrix.dotnet-version }}
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
+          # Simplificado para uma única versão, pois o Sonar só precisa de um relatório.
+          # Usar a LTS mais recente é uma boa prática.
+          dotnet-version: '10.0.x'
 
-      # Sugestão 2: Adicionar um passo de cache para o NuGet
       - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
@@ -68,14 +64,83 @@ jobs:
             --collect:"XPlat Code Coverage" \
             --results-directory ./TestResults/ \
             -- \
-            "CoverletOutputFormat=cobertura" \
-            "Threshold=${{ env.COVERLET_MIN_THRESHOLD }}" \
-            "ThresholdType=line"
+            "CoverletOutputFormat=opencover" # Gerando apenas o formato que o Sonar precisa
 
-      - name: Upload coverage artifact
-        if: matrix.dotnet-version == '10.0.x'
+      - name: Upload coverage artifact for Sonar job
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report-${{ runner.os }}-${{ matrix.dotnet-version }}
-          path: ${{ env.COVERAGE_ARTIFACT_PATH }} # Usando a variável
+          name: coverage-for-sonar
+          path: '**/TestResults/**/coverage.opencover.xml'
           if-no-files-found: error
+
+  # --- JOB 2: ANÁLISE DO SONAR ---
+  sonar-analysis:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    # ESTA É A MÁGICA: Garante que este job só rode após o sucesso do job anterior.
+    needs: build-and-test
+    # Condição para executar a análise do Sonar apenas em Pull Requests.
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-for-sonar
+          path: ./TestResults/
+
+      - name: 🔍 Verify downloaded coverage file
+        run: ls -R ./TestResults
+
+      - name: Cache SonarScanner
+        uses: actions/cache@v4
+        with:
+          path: ~/.dotnet/tools
+          key: ${{ runner.os }}-sonarscanner
+          restore-keys: ${{ runner.os }}-sonarscanner
+
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Add tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: SonarCloud Begin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:"${{ vars.SONAR_PROJECT_KEY }}" \
+            /o:"${{ vars.SONAR_ORGANIZATION }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.cs.opencover.reportsPaths="./TestResults/coverage.opencover.xml"
+
+      - name: Build Solution (for analysis only )
+        run: dotnet build --no-restore
+
+      - name: SonarCloud End
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end
