@@ -1,3 +1,32 @@
+name: .NET CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/*'
+      - 'hotfix/*'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+  checks: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  COVERLET_MIN_THRESHOLD: 85
+  # O caminho agora é mais específico, mas o glob (**) ainda funciona bem.
+  COVERAGE_RESULT_FILE: 'TestResults/coverage.cobertura.xml'
+
 jobs:
   build-test:
     name: Build & Test (.NET ${{ matrix.dotnet-version }})
