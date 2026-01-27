@@ -44,32 +44,29 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      # --- PASSO DE TESTE CORRIGIDO E MAIS ROBUSTO ---
+      # --- PASSO DE TESTE SIMPLIFICADO ---
+      # Removendo os parâmetros que estão sendo ignorados.
+      # Vamos deixar o coletor usar seu padrão (cobertura).
       - name: Test with coverage
         run: |
           dotnet test \
             --configuration Release \
             --no-build \
             --collect:"XPlat Code Coverage" \
-            --results-directory ./TestResults/ \
-            -- \
-            "CoverletOutput=./TestResults/coverage.opencover.xml" \
-            "CoverletOutputFormat=opencover" \
-            "MergeWith=./TestResults/coverage.opencover.xml" # Garante que múltiplos projetos de teste sejam mesclados
+            --results-directory ./TestResults/
 
-      # --- PASSO DE DIAGNÓSTICO PARA VERIFICAR A SAÍDA ---
       - name: 🔍 Diagnostic - List generated files
         run: ls -R ./TestResults
 
+      # --- UPLOAD CORRIGIDO PARA O ARQUIVO REAL ---
       - name: Upload coverage artifact for Sonar job
         uses: actions/upload-artifact@v4
         with:
           name: coverage-for-sonar
-          # Usando um caminho mais direto, já que forçamos a saída
-          path: ./TestResults/coverage.opencover.xml
+          # Procurando pelo arquivo .cobertura.xml em qualquer subdiretório
+          path: '**/TestResults/**/coverage.cobertura.xml'
           if-no-files-found: error
 
-  # --- O JOB DO SONAR PERMANECE O MESMO ---
   sonar-analysis:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
@@ -96,6 +93,7 @@ jobs:
         run: ls -R ./TestResults
 
       - name: Cache SonarScanner
+        # ... (resto do job do Sonar sem alterações)
         uses: actions/cache@v4
         with:
           path: ~/.dotnet/tools
@@ -113,11 +111,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
+          # --- PARÂMETRO DO SONAR ATUALIZADO ---
+          # Trocado de 'opencover' para 'cobertura'
           dotnet sonarscanner begin \
             /k:"${{ vars.SONAR_PROJECT_KEY }}" \
             /o:"${{ vars.SONAR_ORGANIZATION }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.opencover.reportsPaths="./TestResults/coverage.opencover.xml"
+            /d:sonar.cs.cobertura.reportsPaths="./TestResults/coverage.cobertura.xml"
 
       - name: Build Solution (for analysis only )
         run: dotnet build --no-restore
