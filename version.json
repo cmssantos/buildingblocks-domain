@@ -5,9 +5,7 @@
   ],
   "prereleaseIdentifiers": {
     "^refs/heads/develop$": "alpha",
-    "^refs/heads/feature/": "alpha",
-    "^refs/heads/release/": "rc",
-    "^refs/heads/hotfix/": "beta"
+    "^refs/heads/release/": "rc"
   },
   "cloudBuild": {
     "buildNumber": {

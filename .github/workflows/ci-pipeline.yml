@@ -1,13 +1,13 @@
-name: .NET Build & Publish (Nerdbank)
+name: .NET CI/CD
 
 on:
   push:
     branches:
-      - main
+      - feature/*
+      - hotfix/*
       - develop
-      - 'feature/*'
-      - 'hotfix/*'
-      - 'release/*'
+      - release/*
+      - main
 
 env:
   DOTNET_NOLOGO: true
@@ -16,11 +16,41 @@ env:
   NUGET_KEY: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  build-and-deploy:
+  # 1️⃣ Build & Test (all branches)
+  build-test-formatting:
+    name: Build & Formatting & Test
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Check Formatting
+        run: dotnet format --verify-no-changes
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      - name: Test
+        run: dotnet test -c Release --no-build
+
+  # 2️⃣ Pack & Publish (develop, release/* and main only)
+  pack-publish:
+    name: Pack & Publish NuGet
+    runs-on: ubuntu-latest
+    needs: build-test-formatting
+    if: |
+      startsWith(github.ref, 'refs/heads/develop') ||
+      startsWith(github.ref, 'refs/heads/release/') ||
+      github.ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v4
