@@ -81,9 +81,8 @@ public class ResultTests
 
     [Fact]
     public void Constructor_ShouldThrow_WhenFailureWithNoError()
-    {
-        Should.Throw<InvalidOperationException>(() => new TestResult(false, DomainError.None));
-    }
+      => Should.Throw<InvalidOperationException>(()
+        => new TestResult(false, DomainError.None));
 
     [Fact]
     public void ImplicitConversion_FromNullValue_ShouldCreateFailureWithNullValueError()
