@@ -1,0 +1,28 @@
+name: 2 - Workflow Receiver
+
+on:
+  workflow_run:
+    workflows: ["1 - Workflow Sender"] # Corresponde ao 'name:' do arquivo anterior
+    types: [completed]
+
+jobs:
+  receive-artifact:
+    name: Download and Read Artifact
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: 📢 Workflow Receiver has been triggered!
+        run: echo "O workflow 'Sender' terminou e acionou o 'Receiver' com sucesso."
+
+      - name: Download the test artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: test-message-artifact
+          run-id: ${{ github.event.workflow_run.id }}
+          path: ./downloaded-artifact/
+
+      - name: 🔍 Verify the downloaded file
+        run: |
+          echo "Verificando o conteúdo do artefato baixado:"
+          ls -R ./downloaded-artifact/
+          cat ./downloaded-artifact/message.txt

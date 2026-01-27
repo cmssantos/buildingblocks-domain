@@ -1,0 +1,21 @@
+name: 1 - Workflow Sender
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  create-artifact:
+    name: Create and Upload Artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create a test file
+        run: |
+          mkdir -p test-artifact
+          echo "Hello from the sender workflow!" > test-artifact/message.txt
+
+      - name: Upload the test artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-message-artifact
+          path: test-artifact/message.txt
