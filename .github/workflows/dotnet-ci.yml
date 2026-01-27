@@ -44,9 +44,6 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      # --- PASSO DE TESTE SIMPLIFICADO ---
-      # Removendo os parâmetros que estão sendo ignorados.
-      # Vamos deixar o coletor usar seu padrão (cobertura).
       - name: Test with coverage
         run: |
           dotnet test \
@@ -55,15 +52,10 @@ jobs:
             --collect:"XPlat Code Coverage" \
             --results-directory ./TestResults/
 
-      - name: 🔍 Diagnostic - List generated files
-        run: ls -R ./TestResults
-
-      # --- UPLOAD CORRIGIDO PARA O ARQUIVO REAL ---
       - name: Upload coverage artifact for Sonar job
         uses: actions/upload-artifact@v4
         with:
           name: coverage-for-sonar
-          # Procurando pelo arquivo .cobertura.xml em qualquer subdiretório
           path: '**/TestResults/**/coverage.cobertura.xml'
           if-no-files-found: error
 
@@ -83,6 +75,19 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # O cache também deve ser usado aqui para acelerar o restore
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # --- PASSO FALTANTE ADICIONADO AQUI ---
+      - name: Restore dependencies
+        run: dotnet restore
+
       - name: Download coverage artifact
         uses: actions/download-artifact@v4
         with:
@@ -93,7 +98,6 @@ jobs:
         run: ls -R ./TestResults
 
       - name: Cache SonarScanner
-        # ... (resto do job do Sonar sem alterações)
         uses: actions/cache@v4
         with:
           path: ~/.dotnet/tools
@@ -111,8 +115,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          # --- PARÂMETRO DO SONAR ATUALIZADO ---
-          # Trocado de 'opencover' para 'cobertura'
           dotnet sonarscanner begin \
             /k:"${{ vars.SONAR_PROJECT_KEY }}" \
             /o:"${{ vars.SONAR_ORGANIZATION }}" \
@@ -120,6 +122,7 @@ jobs:
             /d:sonar.cs.cobertura.reportsPaths="./TestResults/coverage.cobertura.xml"
 
       - name: Build Solution (for analysis only )
+        # Agora este comando funcionará, pois o restore foi executado
         run: dotnet build --no-restore
 
       - name: SonarCloud End
