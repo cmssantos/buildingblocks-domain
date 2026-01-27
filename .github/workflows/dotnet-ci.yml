@@ -15,6 +15,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+# Variável de ambiente para o diretório de trabalho, para evitar repetição
+env:
+  WORKING_DIRECTORY: .
+
 jobs:
   build-and-test:
     name: Build & Test
@@ -40,9 +44,11 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore
+        working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
+        working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: Test with coverage
         run: |
@@ -51,12 +57,13 @@ jobs:
             --no-build \
             --collect:"XPlat Code Coverage" \
             --results-directory ./TestResults/
+        working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: Upload coverage artifact for Sonar job
         uses: actions/upload-artifact@v4
         with:
           name: coverage-for-sonar
-          path: '**/TestResults/**/coverage.cobertura.xml'
+          path: '${{ env.WORKING_DIRECTORY }}/**/TestResults/**/coverage.cobertura.xml'
           if-no-files-found: error
 
   sonar-analysis:
@@ -85,19 +92,17 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore
+        working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: Download coverage artifact
         uses: actions/download-artifact@v4
         with:
           name: coverage-for-sonar
-          path: ./TestResults/
+          path: ${{ env.WORKING_DIRECTORY }}/TestResults/
 
-      - name: 🔍 Diagnostic - Inspect coverage report paths
-        run: |
-          echo "--- Inspecionando caminhos no relatório de cobertura ---"
-          grep '<source>' ./TestResults/coverage.cobertura.xml | head -n 1
-          echo "--- Diretório de trabalho atual (pwd) ---"
-          pwd
+      - name: 🔍 Verify downloaded coverage file
+        run: ls -R TestResults
+        working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: Cache SonarScanner
         uses: actions/cache@v4
@@ -121,13 +126,15 @@ jobs:
             /k:"${{ vars.SONAR_PROJECT_KEY }}" \
             /o:"${{ vars.SONAR_ORGANIZATION }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.cobertura.reportsPaths="./TestResults/coverage.cobertura.xml" \
-            /d:sonar.projectBaseDir="." # <-- A CORREÇÃO MÁGICA
+            /d:sonar.cs.cobertura.reportsPaths="./TestResults/coverage.cobertura.xml"
+        working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: Build Solution (for analysis only )
         run: dotnet build --no-restore
+        working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: SonarCloud End
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: dotnet sonarscanner end
+        working-directory: ${{ env.WORKING_DIRECTORY }}
