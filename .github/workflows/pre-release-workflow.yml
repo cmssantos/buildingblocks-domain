@@ -25,19 +25,22 @@ jobs:
       packages: write
 
     steps:
-      # 1️⃣ Checkout completo (OBRIGATÓRIO para GitVersion)
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2️⃣ GitVersion
       - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@v3.1.11
         with:
           versionSpec: '6.0.x'
 
-      # 3️⃣ Determinar versão (sem mexer no git!)
+      - name: Branch Proof
+        run: |
+          echo "Ref: $GITHUB_REF"
+          echo "Ref Name: $GITHUB_REF_NAME"
+          git branch --show-current
+
       - name: Determine Version
         id: gitversion
         uses: gittools/actions/gitversion/execute@v3.1.11
@@ -46,14 +49,20 @@ jobs:
           configFilePath: GitVersion.yml
           disableShallowCloneCheck: true
 
-      # (opcional, mas altamente recomendado)
+      # 🛡️ Guard rail — falha cedo se GitVersion falhar
+      - name: Validate GitVersion output
+        run: |
+          if [ -z "${{ steps.gitversion.outputs.fullSemVer }}" ]; then
+            echo "GitVersion failed to calculate a version"
+            exit 1
+          fi
+
       - name: Show calculated version
         run: |
           echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
           echo "NuGetVersion: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
           echo "Branch: ${{ steps.gitversion.outputs.branchName }}"
 
-      # 4️⃣ Setup .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -62,11 +71,9 @@ jobs:
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 5️⃣ Restore
       - name: Restore
         run: dotnet restore
 
-      # 6️⃣ Build com versão calculada
       - name: Build
         run: >
           dotnet build
@@ -74,7 +81,6 @@ jobs:
           --no-restore
           /p:Version=${{ steps.gitversion.outputs.fullSemVer }}
 
-      # 7️⃣ Pack NuGet
       - name: Pack
         run: >
           dotnet pack
@@ -84,7 +90,6 @@ jobs:
           -p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
           --output ./artifacts
 
-      # 8️⃣ Push para GitHub Packages
       - name: Push to GitHub Packages
         run: |
           dotnet nuget push "./artifacts/*.nupkg" \
