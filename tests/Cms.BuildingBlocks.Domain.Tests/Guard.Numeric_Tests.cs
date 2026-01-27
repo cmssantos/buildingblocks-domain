@@ -16,7 +16,7 @@ public sealed class Guard_Numeric_Tests
     [MemberData(nameof(NegativeValues))]
     public void AgainstNegative_ShouldThrow_WhenValueIsNegative(int value)
     {
-        var error = new DomainError("value.negative");
+        DomainError error = new DomainError("value.negative");
 
         Action act = () =>
             Guard.AgainstNegative(value, error);
@@ -29,7 +29,7 @@ public sealed class Guard_Numeric_Tests
     [InlineData(10)]
     public void AgainstNegative_ShouldReturnValue_WhenValueIsPositive(int value)
     {
-        var result = Guard.AgainstNegative(value, TestDomainError.DummyError());
+        int result = Guard.AgainstNegative(value, TestDomainError.DummyError());
 
         result.ShouldBe(value);
     }
@@ -39,7 +39,7 @@ public sealed class Guard_Numeric_Tests
     [InlineData(-1)]
     public void AgainstNegativeOrZero_ShouldThrow_WhenInvalid(int value)
     {
-        var error = new DomainError("value.invalid");
+        DomainError error = new DomainError("value.invalid");
 
         Action act = () =>
             Guard.AgainstNegativeOrZero(value, error);
@@ -63,7 +63,7 @@ public sealed class Guard_Numeric_Tests
     [InlineData(10.5)]
     public void AgainstNegativeDecimal_ShouldReturn_WhenZeroOrPositive(decimal value)
     {
-        var result = Guard.AgainstNegative(value, TestDomainError.DummyError());
+        decimal result = Guard.AgainstNegative(value, TestDomainError.DummyError());
 
         result.ShouldBe(value);
     }
@@ -85,7 +85,7 @@ public sealed class Guard_Numeric_Tests
     [InlineData(10)]
     public void AgainstNegativeOrZeroDecimal_ShouldReturn_WhenPositive(decimal value)
     {
-        var result = Guard.AgainstNegativeOrZero(value, TestDomainError.DummyError());
+        decimal result = Guard.AgainstNegativeOrZero(value, TestDomainError.DummyError());
 
         result.ShouldBe(value);
     }

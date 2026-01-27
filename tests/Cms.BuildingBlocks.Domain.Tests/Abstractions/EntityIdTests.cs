@@ -12,8 +12,8 @@ public sealed class EntityIdTests
     [Fact]
     public void ShouldExposeValue()
     {
-        var guid = Guid.NewGuid();
-        var id = new TestEntityId(guid);
+        Guid guid = Guid.NewGuid();
+        TestEntityId id = new TestEntityId(guid);
 
         id.Value.ShouldBe(guid);
     }
@@ -21,7 +21,7 @@ public sealed class EntityIdTests
     [Fact]
     public void ShouldExposeValueViaIEntityId()
     {
-        var guid = Guid.NewGuid();
+        Guid guid = Guid.NewGuid();
         IEntityId id = new TestEntityId(guid);
 
         id.Value.ShouldBe(guid);
@@ -30,10 +30,10 @@ public sealed class EntityIdTests
     [Fact]
     public void ShouldSupportValueEquality()
     {
-        var guid = Guid.NewGuid();
+        Guid guid = Guid.NewGuid();
 
-        var id1 = new TestEntityId(guid);
-        var id2 = new TestEntityId(guid);
+        TestEntityId id1 = new TestEntityId(guid);
+        TestEntityId id2 = new TestEntityId(guid);
 
         id1.ShouldBe(id2);
     }

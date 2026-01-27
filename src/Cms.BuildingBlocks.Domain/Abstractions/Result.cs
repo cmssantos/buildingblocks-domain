@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+
 using Cms.BuildingBlocks.Domain.Errors;
 
 namespace Cms.BuildingBlocks.Domain.Abstractions;

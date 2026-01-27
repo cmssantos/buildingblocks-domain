@@ -12,7 +12,7 @@ public sealed class Guard_Guid_Tests
     [Fact]
     public void AgainstEmpty_ShouldThrow_WhenGuidIsEmpty()
     {
-        var error = new DomainError("guid.empty");
+        DomainError error = new DomainError("guid.empty");
 
         Action act = () =>
             Guard.AgainstEmpty(Guid.Empty, error);
@@ -23,7 +23,7 @@ public sealed class Guard_Guid_Tests
     [Fact]
     public void AgainstEmpty_ShouldReturn_WhenGuidIsValid()
     {
-        var guid = Guid.NewGuid();
+        Guid guid = Guid.NewGuid();
 
         Guid result = Guard.AgainstEmpty(guid, TestDomainError.DummyError());
 

@@ -12,7 +12,7 @@ public class ResultTests
     [Fact]
     public void Success_ShouldCreateSuccessResult()
     {
-        var result = Result.Success();
+        Result result = Result.Success();
 
         result.IsSuccess.ShouldBeTrue();
         result.IsFailure.ShouldBeFalse();
@@ -22,8 +22,8 @@ public class ResultTests
     [Fact]
     public void Failure_ShouldCreateFailureResult()
     {
-        var error = new DomainError("Test.Error");
-        var result = Result.Failure(error);
+        DomainError error = new DomainError("Test.Error");
+        Result result = Result.Failure(error);
 
         result.IsSuccess.ShouldBeFalse();
         result.IsFailure.ShouldBeTrue();
@@ -33,8 +33,8 @@ public class ResultTests
     [Fact]
     public void SuccessGeneric_ShouldCreateSuccessResultWithValue()
     {
-        var value = "test";
-        var result = Result.Success(value);
+        string value = "test";
+        Result<string> result = Result.Success(value);
 
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(value);
@@ -43,8 +43,8 @@ public class ResultTests
     [Fact]
     public void FailureGeneric_ShouldCreateFailureResultWithError()
     {
-        var error = new DomainError("Test.Error");
-        var result = Result.Failure<string>(error);
+        DomainError error = new DomainError("Test.Error");
+        Result<string> result = Result.Failure<string>(error);
 
         result.IsSuccess.ShouldBeFalse();
         result.IsFailure.ShouldBeTrue();
@@ -65,7 +65,7 @@ public class ResultTests
     [Fact]
     public void ImplicitConversion_FromError_ShouldCreateFailureResult()
     {
-        var error = new DomainError("Test.Error");
+        DomainError error = new DomainError("Test.Error");
         Result<string> result = error;
 
         result.IsSuccess.ShouldBeFalse();
@@ -75,7 +75,7 @@ public class ResultTests
     [Fact]
     public void Constructor_ShouldThrow_WhenSuccessWithError()
     {
-        var error = new DomainError("Error");
+        DomainError error = new DomainError("Error");
         Should.Throw<InvalidOperationException>(() => new TestResult(true, error));
     }
 

@@ -12,9 +12,9 @@ public sealed class EntityTests
     [Fact]
     public void Constructor_ShouldSetId()
     {
-        var id = new TestEntityId(Guid.NewGuid());
+        TestEntityId id = new TestEntityId(Guid.NewGuid());
 
-        var entity = new TestEntity(id);
+        TestEntity entity = new TestEntity(id);
 
         entity.Id.ShouldBe(id);
     }
@@ -22,8 +22,8 @@ public sealed class EntityTests
     [Fact]
     public void Raise_ShouldAddDomainEvent()
     {
-        var entity = new TestEntity(new TestEntityId(Guid.NewGuid()));
-        var domainEvent = new TestDomainEvent();
+        TestEntity entity = new TestEntity(new TestEntityId(Guid.NewGuid()));
+        TestDomainEvent domainEvent = new TestDomainEvent();
 
         entity.RaiseTestEvent(domainEvent);
 
@@ -34,7 +34,7 @@ public sealed class EntityTests
     [Fact]
     public void ClearDomainEvents_ShouldRemoveAllEvents()
     {
-        var entity = new TestEntity(new TestEntityId(Guid.NewGuid()));
+        TestEntity entity = new TestEntity(new TestEntityId(Guid.NewGuid()));
 
         entity.RaiseTestEvent(new TestDomainEvent());
         entity.RaiseTestEvent(new TestDomainEvent());
@@ -49,7 +49,7 @@ public sealed class EntityTests
     [Fact]
     public void DomainEvents_ShouldBeReadOnly()
     {
-        var entity = new TestEntity(new TestEntityId(Guid.NewGuid()));
+        TestEntity entity = new TestEntity(new TestEntityId(Guid.NewGuid()));
 
         entity.DomainEvents
             .ShouldBeAssignableTo<IReadOnlyCollection<IDomainEvent>>();
