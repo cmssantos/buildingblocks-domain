@@ -40,8 +40,11 @@ jobs:
             /k:"${{ env.SONAR_PROJECT_KEY }}" \
             /o:"${{ env.SONAR_ORGANIZATION }}" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.cobertura.xml" \
-            /d:sonar.coverage.exclusions="**/*Tests.cs,**/*Test.cs,**/Program.cs"
+            /d:sonar.cs.cobertura.reportsPaths="**/TestResults/**/coverage.cobertura.xml" \
+            /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs"
+
+      - name: Debug coverage files
+        run: find . -name "coverage.cobertura.xml"
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
