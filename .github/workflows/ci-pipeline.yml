@@ -106,9 +106,6 @@ jobs:
       - name: Sonar Begin
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_BRANCH: ${{ github.head_ref }}
-          PR_BASE: ${{ github.base_ref }}
         run: |
           dotnet sonarscanner begin \
             /k:"${{ env.SONAR_PROJECT_KEY }}" \
@@ -120,9 +117,6 @@ jobs:
             /d:sonar.cs.msbuild.enable=true \
             /d:sonar.pullrequest.provider="github" \
             /d:sonar.pullrequest.github.repository="${{ github.repository }}" \
-            /d:sonar.pullrequest.key="${{ github.event.pull_request.number }}" \
-            /d:sonar.pullrequest.branch="${{ github.head_ref }}" \
-            /d:sonar.pullrequest.base="${{ github.base_ref }}" \
             /d:sonar.tests="**/*Tests/**,**/*.Tests/**" \
             /d:sonar.test.inclusions="**/*Tests/**/*.cs"
 
