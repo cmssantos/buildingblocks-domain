@@ -94,6 +94,6 @@ jobs:
                 repo: context.repo.repo,
                 sha: github.event.workflow_run.head_sha,
                 state: "success",
-                context: "SonarCloud Analysis",  // <== Deve coincidir com o nome do check obrigatório
+                context: "SonarCloud Analysis",
                 description: "SonarCloud analysis finished"
             });
