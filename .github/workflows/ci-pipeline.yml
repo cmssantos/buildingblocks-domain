@@ -44,7 +44,41 @@ jobs:
       - name: Test
         run: dotnet test -c Release --no-build
 
-# 2️⃣ SonarCloud (Pull Request only)
+  # 2️⃣ Pre-release Pack for feature/hotfix
+  pre-release-pack:
+    name: Pre-release Pack (Alpha/Beta)
+    runs-on: ubuntu-latest
+    needs: build-test-formatting
+    if: |
+      startsWith(github.ref, 'refs/heads/feature/') ||
+      startsWith(github.ref, 'refs/heads/hotfix/')
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      - name: Pack Pre-release
+        run: dotnet pack -c Release --no-build --output ./artifacts
+
+      - name: Push Pre-release to NuGet
+        run: |
+          dotnet nuget push "./artifacts/*.nupkg" \
+            --api-key ${{ env.NUGET_KEY }} \
+            --source ${{ env.NUGET_FEED }} \
+            --skip-duplicate
+
+# 3️⃣ SonarCloud (Pull Request only)
   sonarcloud:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
@@ -103,7 +137,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
 
-  # 3️⃣ Pack & Publish (develop, release/* and main only)
+  # 4️⃣ Pack & Publish (develop, release/* and main only)
   pack-publish:
     name: Pack & Publish NuGet
     runs-on: ubuntu-latest
