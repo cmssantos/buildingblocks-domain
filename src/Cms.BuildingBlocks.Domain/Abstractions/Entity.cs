@@ -5,6 +5,7 @@ namespace Cms.BuildingBlocks.Domain.Abstractions;
 /// Entities are objects that are defined by their identity rather than their attributes.
 /// </summary>
 /// <typeparam name="TId">The type of the entity's identifier.</typeparam>
+#pragma warning disable S4035 // Entity is intentionally an abstract base class for inheritance, not sealed
 public abstract class Entity<TId> : IEquatable<Entity<TId>>
     where TId : class, IEntityId
 {
@@ -76,3 +77,4 @@ public abstract class Entity<TId> : IEquatable<Entity<TId>>
     public static bool operator !=(Entity<TId>? left, Entity<TId>? right)
         => !Equals(left, right);
 }
+#pragma warning restore S4035
