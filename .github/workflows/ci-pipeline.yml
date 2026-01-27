@@ -14,6 +14,8 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   NUGET_FEED: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
   NUGET_KEY: ${{ secrets.GITHUB_TOKEN }}
+  SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+  SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
 
 jobs:
   # 1️⃣ Build & Test (all branches)
@@ -42,7 +44,66 @@ jobs:
       - name: Test
         run: dotnet test -c Release --no-build
 
-  # 2️⃣ Pack & Publish (develop, release/* and main only)
+# 2️⃣ SonarCloud (Pull Request only)
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: build-test-formatting
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Sonar Begin
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:"${{ env.SONAR_PROJECT_KEY }}" \
+            /o:"${{ env.SONAR_ORGANIZATION }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.token="$SONAR_TOKEN" \
+            /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
+            /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs" \
+            /d:sonar.cs.msbuild.enable=true \
+            /d:sonar.pullrequest.provider="github" \
+            /d:sonar.pullrequest.github.repository="${{ github.repository }}" \
+            /d:sonar.pullrequest.key="${{ github.event.pull_request.number }}" \
+            /d:sonar.pullrequest.branch="${{ github.head_ref }}" \
+            /d:sonar.pullrequest.base="${{ github.base_ref }}" \
+            /d:sonar.tests="**/*Tests/**,**/*.Tests/**" \
+            /d:sonar.test.inclusions="**/*Tests/**/*.cs"
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test with OpenCover
+        run: |
+          dotnet test \
+            --configuration Release \
+            --no-build \
+            /p:CollectCoverage=true \
+            /p:CoverletOutput=TestResults/coverage.opencover.xml \
+            /p:CoverletOutputFormat=opencover
+
+      - name: Sonar End
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
+
+  # 3️⃣ Pack & Publish (develop, release/* and main only)
   pack-publish:
     name: Pack & Publish NuGet
     runs-on: ubuntu-latest
