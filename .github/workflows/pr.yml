@@ -1,7 +1,6 @@
 name: PR Quality Gates
 
 on:
-  # Aciona este workflow APENAS quando o workflow '.NET CI' for concluído com sucesso
   workflow_run:
     workflows: [".NET CI"]
     types:
