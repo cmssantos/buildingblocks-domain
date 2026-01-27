@@ -1,14 +1,14 @@
 {
   "version": "1.0",
-  "prereleaseIdentifiers": {
-    "develop": "alpha",
-    "release": "rc",
-    "feature": "alpha",
-    "hotfix": "beta"
-  },
   "publicReleaseRefSpec": [
     "^refs/heads/main$"
   ],
+  "prereleaseIdentifiers": {
+    "^refs/heads/develop$": "alpha",
+    "^refs/heads/feature/": "alpha",
+    "^refs/heads/release/": "rc",
+    "^refs/heads/hotfix/": "beta"
+  },
   "cloudBuild": {
     "buildNumber": {
       "enabled": true
