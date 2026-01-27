@@ -1,8 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- ========================= -->
-  <!-- Package Metadata -->
-  <!-- ========================= -->
   <PropertyGroup>
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 
@@ -12,10 +9,6 @@
       Entities, Aggregate Roots, Value Objects, Domain Events, Errors and Guards.
     </Description>
 
-    <!-- Version injected by release-please -->
-    <Version>0.0.0</Version>
-    <PackageVersion>0.0.0</PackageVersion>
-
     <Authors>Cleudice Santos</Authors>
     <Company>CMS</Company>
 
@@ -23,50 +16,26 @@
     <RepositoryUrl>https://github.com/cmssantos/buildingblocks-domain</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
 
-    <PackageTags>ddd;domain;building-blocks;clean-architecture;dotnet</PackageTags>
+    <PackageTags>
+      ddd;domain;building-blocks;clean-architecture;dotnet
+    </PackageTags>
 
-    <!-- NuGet Gallery -->
-    <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
-
-    <!-- Packaging -->
     <IsPackable>true</IsPackable>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 
-    <!-- Symbols (CORRETO) -->
+    <!-- Symbols -->
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
-
-    <!-- NÃO empacotar no build -->
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-
-    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
-    <RunAnalyzers>true</RunAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
   </ItemGroup>
 
-
-  <!-- ========================= -->
-  <!-- NuGet README -->
-  <!-- ========================= -->
   <ItemGroup>
-    <None Include="README.NUGET.md"
-          Pack="true"
-          PackagePath="\" />
-  </ItemGroup>
-
-  <!-- ========================= -->
-  <!-- Analyzers (dev-only) -->
-  <!-- ========================= -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers"
-                      PrivateAssets="all" />
+    <None Include="README.NUGET.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

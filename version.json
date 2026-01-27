@@ -1,6 +1,17 @@
 {
   "version": "1.0",
+  "prereleaseIdentifiers": {
+    "develop": "alpha",
+    "release": "rc",
+    "feature": "alpha",
+    "hotfix": "beta"
+  },
   "publicReleaseRefSpec": [
     "^refs/heads/main$"
-  ]
+  ],
+  "cloudBuild": {
+    "buildNumber": {
+      "enabled": true
+    }
+  }
 }
