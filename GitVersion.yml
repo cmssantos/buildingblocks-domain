@@ -16,16 +16,22 @@ branches:
     regex: ^feature[/-]
     tag: alpha
     increment: Minor
+    source-branches:
+      - develop
 
   hotfix:
     regex: ^hotfix[/-]
     tag: beta
     increment: Patch
+    source-branches:
+      - main
 
   release:
     regex: ^release[/-]
     tag: rc
     increment: None
+    source-branches:
+      - develop
 
 ignore:
   sha: []

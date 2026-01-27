@@ -49,6 +49,13 @@ jobs:
           configFilePath: GitVersion.yml
           disableShallowCloneCheck: true
 
+      - name: Guard GitVersion
+        run: |
+          if [ -z "${{ steps.gitversion.outputs.fullSemVer }}" ]; then
+            echo "❌ GitVersion failed — invalid branch config"
+            exit 1
+          fi
+
       # 🛡️ Guard rail — falha cedo se GitVersion falhar
       - name: Validate GitVersion output
         run: |
