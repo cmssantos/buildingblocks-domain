@@ -47,7 +47,9 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
-            /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs"
+            /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs" \
+            /d:sonar.cs.msbuild.enable=true \
+            /d:sonar.cs.roslyn.ignoreIssues=false \
             /d:sonar.pullrequest.key="${PR_NUMBER}" \
             /d:sonar.pullrequest.branch="${PR_BRANCH}" \
             /d:sonar.pullrequest.base="${PR_BASE}"
