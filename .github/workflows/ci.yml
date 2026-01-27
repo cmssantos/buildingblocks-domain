@@ -59,7 +59,17 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
+      # PASSO DE DIAGNÓSTICO 1: Verificar se o coletor está presente
+      - name: 🔍 Diagnostic - List restored packages
+        shell: bash
+        run: |
+          echo "--- Verificando a presença do coverlet.collector ---"
+          find ~/.nuget/packages -name "coverlet.collector" -print -quit || echo "AVISO: coverlet.collector não encontrado no cache do NuGet."
+
       - name: Test with coverage
+        # Usamos 'continue-on-error' para garantir que os passos de diagnóstico rodem mesmo se os testes falharem
+        continue-on-error: true
+        id: test_step # Damos um ID ao passo para verificar seu resultado depois
         shell: bash
         run: |
           dotnet test \
@@ -73,11 +83,24 @@ jobs:
             "Threshold=${{ env.COVERLET_MIN_THRESHOLD }}" \
             "ThresholdType=line"
 
+      # PASSO DE DIAGNÓSTICO 2: Listar o que foi gerado
+      - name: 🔍 Diagnostic - List TestResults content
+        shell: bash
+        run: |
+          echo "--- Conteúdo do diretório TestResults ---"
+          ls -R ./TestResults || echo "Diretório TestResults não foi criado."
+
+      # PASSO DE DIAGNÓSTICO 3: Verificar se os testes falharam
+      - name: 🔍 Diagnostic - Check for test failures
+        if: steps.test_step.outcome == 'failure'
+        run: |
+          echo "::error::O passo de teste falhou! A falha nos testes pode ter impedido a geração do relatório de cobertura."
+          exit 1 # Força a falha do workflow
+
       - name: Upload coverage artifact
         if: matrix.dotnet-version == '10.0.x'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report-${{ runner.os }}-${{ matrix.dotnet-version }}
-          # O caminho para o upload agora corresponderá exatamente ao que foi gerado
           path: ${{ env.COVERAGE_RESULT_FILE }}
           if-no-files-found: error
