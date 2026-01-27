@@ -24,8 +24,7 @@ env:
   DOTNET_NOLOGO: "true"
   DOTNET_CLI_TELEMETRY_OPTOUT: "true"
   COVERLET_MIN_THRESHOLD: 85
-  # O caminho agora é mais específico, mas o glob (**) ainda funciona bem.
-  COVERAGE_RESULT_FILE: 'TestResults/coverage.cobertura.xml'
+  COVERAGE_ARTIFACT_PATH: '**/TestResults/**/coverage.cobertura.xml'
 
 jobs:
   build-test:
@@ -45,6 +44,14 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       - name: Restore dependencies
         run: dotnet restore
 
@@ -62,14 +69,11 @@ jobs:
             "CoverletOutputFormat=cobertura" \
             "Threshold=${{ env.COVERLET_MIN_THRESHOLD }}" \
             "ThresholdType=line"
-            # Nota: Removi o CoverletOutput e MergeWith, pois o coletor gerencia isso.
-            # O importante é o coletor gerar o arquivo, e o upload encontrá-lo.
 
       - name: Upload coverage artifact
         if: matrix.dotnet-version == '10.0.x'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report-${{ runner.os }}-${{ matrix.dotnet-version }}
-          # A correção final e robusta:
-          path: '**/TestResults/**/coverage.cobertura.xml'
+          path: ${{ env.COVERAGE_ARTIFACT_PATH }}
           if-no-files-found: error
