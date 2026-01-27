@@ -75,7 +75,6 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      # O cache também deve ser usado aqui para acelerar o restore
       - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
@@ -84,7 +83,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      # --- PASSO FALTANTE ADICIONADO AQUI ---
       - name: Restore dependencies
         run: dotnet restore
 
@@ -94,8 +92,12 @@ jobs:
           name: coverage-for-sonar
           path: ./TestResults/
 
-      - name: 🔍 Verify downloaded coverage file
-        run: ls -R ./TestResults
+      - name: 🔍 Diagnostic - Inspect coverage report paths
+        run: |
+          echo "--- Inspecionando caminhos no relatório de cobertura ---"
+          grep '<source>' ./TestResults/coverage.cobertura.xml | head -n 1
+          echo "--- Diretório de trabalho atual (pwd) ---"
+          pwd
 
       - name: Cache SonarScanner
         uses: actions/cache@v4
@@ -119,10 +121,10 @@ jobs:
             /k:"${{ vars.SONAR_PROJECT_KEY }}" \
             /o:"${{ vars.SONAR_ORGANIZATION }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.cobertura.reportsPaths="./TestResults/coverage.cobertura.xml"
+            /d:sonar.cs.cobertura.reportsPaths="./TestResults/coverage.cobertura.xml" \
+            /d:sonar.projectBaseDir="." # <-- A CORREÇÃO MÁGICA
 
       - name: Build Solution (for analysis only )
-        # Agora este comando funcionará, pois o restore foi executado
         run: dotnet build --no-restore
 
       - name: SonarCloud End
