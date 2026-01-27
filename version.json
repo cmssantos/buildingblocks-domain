@@ -5,11 +5,14 @@
   ],
   "prereleaseIdentifiers": {
     "^refs/heads/develop$": "alpha",
-    "^refs/heads/release/": "rc"
+    "^refs/heads/feature/": "alpha-feature",
+    "^refs/heads/hotfix/": "alpha-hotfix",
+    "^refs/heads/release/": "rc",
+    "^refs/pull/": "alpha"
   },
   "cloudBuild": {
     "buildNumber": {
-      "enabled": true
+      "enabled": false
     }
   }
 }
