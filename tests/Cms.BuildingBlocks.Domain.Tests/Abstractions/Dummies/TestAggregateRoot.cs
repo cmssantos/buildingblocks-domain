@@ -4,7 +4,10 @@ namespace Cms.BuildingBlocks.Domain.Tests.Abstractions.Dummies;
 
 public sealed class TestAggregateRoot : AggregateRoot<TestEntityId>
 {
-    public TestAggregateRoot(TestEntityId id) => Id = id;
+    public TestAggregateRoot(TestEntityId id)
+    {
+      Id = id;
+    }
 
     public void IncrementVersionPublic()
         => IncrementVersion();

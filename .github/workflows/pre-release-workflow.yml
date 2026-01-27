@@ -27,12 +27,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          fetch-depth: 0 # Essencial para o GitVersion ler o histórico
+          fetch-depth: 0
 
       - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@b4372b9a14557a67171fe7292bf2f92b657c26a3 # v3.1.11
         with:
           versionSpec: '6.0.x'
+
+      - name: Git Debug & Normalization
+        shell: bash
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git fetch --tags --force
+          git checkout ${{ github.head_ref || github.ref_name }}
+          echo "Current Branch: $(git branch --show-current)"
+          echo "Last Tags:"
+          git tag -l | tail -n 5
 
       - name: Determine Version
         id: gitversion
