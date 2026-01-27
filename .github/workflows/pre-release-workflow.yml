@@ -19,64 +19,75 @@ jobs:
   build-and-deploy:
     name: Version, Build & Publish
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       packages: write
 
     steps:
+      # 1️⃣ Checkout completo (OBRIGATÓRIO para GitVersion)
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # 2️⃣ GitVersion
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@b4372b9a14557a67171fe7292bf2f92b657c26a3 # v3.1.11
+        uses: gittools/actions/gitversion/setup@v3.1.11
         with:
           versionSpec: '6.0.x'
 
-      - name: Git Debug & Normalization
-        shell: bash
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git fetch --tags --force
-          git checkout ${{ github.head_ref || github.ref_name }}
-          echo "Current Branch: $(git branch --show-current)"
-          echo "Last Tags:"
-          git tag -l | tail -n 5
-
+      # 3️⃣ Determinar versão (sem mexer no git!)
       - name: Determine Version
         id: gitversion
-        uses: gittools/actions/gitversion/execute@b4372b9a14557a67171fe7292bf2f92b657c26a3 # v3.1.11
+        uses: gittools/actions/gitversion/execute@v3.1.11
         with:
           useConfigFile: true
           configFilePath: GitVersion.yml
           disableShallowCloneCheck: true
 
+      # (opcional, mas altamente recomendado)
+      - name: Show calculated version
+        run: |
+          echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
+          echo "NuGetVersion: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
+          echo "Branch: ${{ steps.gitversion.outputs.branchName }}"
+
+      # 4️⃣ Setup .NET
       - name: Setup .NET
-        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
           source-url: ${{ env.NUGET_FEED }}
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # 5️⃣ Restore
       - name: Restore
         run: dotnet restore
 
+      # 6️⃣ Build com versão calculada
       - name: Build
-        run: dotnet build --configuration Release --no-restore /p:Version=${{ steps.gitversion.outputs.fullSemVer }}
+        run: >
+          dotnet build
+          --configuration Release
+          --no-restore
+          /p:Version=${{ steps.gitversion.outputs.fullSemVer }}
 
+      # 7️⃣ Pack NuGet
       - name: Pack
-        run: |
-          dotnet pack --configuration Release --no-build \
-            --include-symbols \
-            -p:PackageVersion=${{ steps.gitversion.outputs.fullSemVer }} \
-            --output ./artifacts
+        run: >
+          dotnet pack
+          --configuration Release
+          --no-build
+          --include-symbols
+          -p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
+          --output ./artifacts
 
+      # 8️⃣ Push para GitHub Packages
       - name: Push to GitHub Packages
         run: |
-          dotnet nuget push ./artifacts/*.nupkg \
+          dotnet nuget push "./artifacts/*.nupkg" \
             --api-key ${{ env.NUGET_KEY }} \
             --source ${{ env.NUGET_FEED }} \
             --skip-duplicate
