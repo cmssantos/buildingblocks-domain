@@ -57,9 +57,8 @@ jobs:
       - name: Download coverage artifact
         uses: actions/download-artifact@v4
         with:
-          name: coverage-report-ubuntu-latest-10.0.x
-          path: ./TestResults/
-          run-id: ${{ steps.get-ci.outputs.result }}
+            name: coverage-pr-${{ github.event.pull_request.number }}
+            path: ./TestResults/
 
       - name: 🔍 Verify coverage file
         run: ls -R ./TestResults
