@@ -1,6 +1,7 @@
 name: PR Quality Gates
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: [".NET CI"]
     types: [completed]
