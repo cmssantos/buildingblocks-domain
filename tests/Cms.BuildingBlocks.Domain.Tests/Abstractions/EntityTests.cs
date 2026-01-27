@@ -54,4 +54,19 @@ public sealed class EntityTests
         entity.DomainEvents
             .ShouldBeAssignableTo<IReadOnlyCollection<IDomainEvent>>();
     }
+
+    [Fact]
+    public void Raise_ShouldAddMultipleDifferentDomainEvents()
+    {
+        TestEntity entity = new TestEntity(new TestEntityId(Guid.NewGuid()));
+        TestDomainEvent event1 = new TestDomainEvent();
+        AnotherTestDomainEvent event2 = new AnotherTestDomainEvent();
+
+        entity.RaiseTestEvent(event1);
+        entity.RaiseTestEvent(event2);
+
+        entity.DomainEvents.Count.ShouldBe(2);
+        entity.DomainEvents.ShouldContain(event1);
+        entity.DomainEvents.ShouldContain(event2);
+    }
 }

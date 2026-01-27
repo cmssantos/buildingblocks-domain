@@ -70,6 +70,24 @@ public class EntityEqualityTests
         entity1.Equals(entity2).ShouldBeTrue();
     }
 
+    [Fact]
+    public void Equals_ShouldReturnFalse_WhenObjectIsNotEntity()
+    {
+        TestEntity entity = new TestEntity(new TestEntityId(Guid.NewGuid()));
+        object notAnEntity = new { Id = Guid.NewGuid() };
+
+        entity.Equals(notAnEntity).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void OperatorEquals_ShouldReturnTrue_WhenBothAreNull()
+    {
+        TestEntity? entity1 = null;
+        TestEntity? entity2 = null;
+
+        (entity1 == entity2).ShouldBeTrue();
+    }
+
     private class AnotherTestEntity : Entity<TestEntityId>
     {
         public AnotherTestEntity(TestEntityId id)

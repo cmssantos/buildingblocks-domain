@@ -85,6 +85,56 @@ public class ResultTests
         Should.Throw<InvalidOperationException>(() => new TestResult(false, DomainError.None));
     }
 
+    [Fact]
+    public void ImplicitConversion_FromNullValue_ShouldCreateFailureWithNullValueError()
+    {
+        string? nullValue = null;
+        Result<string> result = nullValue;
+
+        result.IsSuccess.ShouldBeFalse();
+        result.IsFailure.ShouldBeTrue();
+        result.Error.ShouldBe(DomainError.NullValue);
+    }
+
+    [Fact]
+    public void IsFailure_ShouldBeTrue_WhenResultIsFailure()
+    {
+        DomainError error = new DomainError("Test.Error");
+        Result result = Result.Failure(error);
+
+        result.IsFailure.ShouldBeTrue();
+        result.IsSuccess.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void IsFailure_ShouldBeFalse_WhenResultIsSuccess()
+    {
+        Result result = Result.Success();
+
+        result.IsFailure.ShouldBeFalse();
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Error_ShouldReturnCorrectError_OnGenericFailureResult()
+    {
+        DomainError error = new DomainError("Test.Error");
+        Result<string> result = Result.Failure<string>(error);
+
+        result.Error.ShouldBe(error);
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Value_ShouldReturnCorrectValue_OnSuccessResult()
+    {
+        string expectedValue = "test value";
+        Result<string> result = Result.Success(expectedValue);
+
+        result.Value.ShouldBe(expectedValue);
+        result.IsSuccess.ShouldBeTrue();
+    }
+
     private class TestResult : Result
     {
         public TestResult(bool isSuccess, DomainError error) : base(isSuccess, error) { }
