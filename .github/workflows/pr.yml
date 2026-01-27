@@ -57,7 +57,7 @@ jobs:
       - name: Download coverage artifact
         uses: actions/download-artifact@v4
         with:
-            name: coverage-pr-${{ github.event.pull_request.number }}
+            name: coverage-pr-${{ github.event.pull_request.number }}-10.0.x
             path: ./TestResults/
 
       - name: 🔍 Verify coverage file
