@@ -54,11 +54,14 @@ csharp_style_expression_bodied_constructors = false:suggestion
 csharp_style_expression_bodied_accessors = when_on_single_line:suggestion
 
 # -------------------------
-# Var usage
+# Var usage (enforced)
 # -------------------------
-csharp_style_var_for_built_in_types = true:suggestion
-csharp_style_var_when_type_is_apparent = true:suggestion
-csharp_style_var_elsewhere = false:suggestion
+# Do not allow var for built-in types
+csharp_style_var_for_built_in_types = false:warning
+# Do not allow var when the type is apparent
+csharp_style_var_when_type_is_apparent = false:warning
+# Do not allow var in any other case
+csharp_style_var_elsewhere = false:warning
 
 # -------------------------
 # Nullability & safety

@@ -55,7 +55,10 @@ jobs:
             /d:sonar.cs.roslyn.ignoreIssues=false \
             /d:sonar.pullrequest.key="${PR_NUMBER}" \
             /d:sonar.pullrequest.branch="${PR_BRANCH}" \
-            /d:sonar.pullrequest.base="${PR_BASE}"
+            /d:sonar.pullrequest.base="${PR_BASE}" \
+            /d:sonar.tests="**/*Tests/**,**/*.Tests/**" \
+            /d:sonar.test.inclusions="**/*Tests/**/*.cs" \
+            /d:sonar.coverage.exclusions="**/*Tests/**/*.cs"
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
