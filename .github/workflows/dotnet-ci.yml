@@ -1,38 +1,49 @@
-name: CI Pipeline
+name: .NET CI
 
 on:
-  pull_request:
-    branches: [ main, develop ]
   push:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
+      - 'feature/*'
+      - 'hotfix/*'
+  pull_request:
+    branches:
+      - main
+      - develop
 
 permissions:
   contents: read
-  pull-requests: write
   checks: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# Variável de ambiente para o diretório de trabalho, para evitar repetição
 env:
-  WORKING_DIRECTORY: .
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  COVERLET_MIN_THRESHOLD: 85
+  COVERAGE_RESULT_FILE: '**/TestResults/coverage.cobertura.xml'
 
 jobs:
-  build-and-test:
-    name: Build & Test
+  build-test:
+    name: Build & Test (.NET ${{ matrix.dotnet-version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Testando contra as versões LTS (Long-Term Support)
+        dotnet-version: [ '8.0.x', '10.0.x' ]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Setup .NET
+      - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: ${{ matrix.dotnet-version }}
 
       - name: Cache NuGet packages
         uses: actions/cache@v4
@@ -44,97 +55,29 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore
-        working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
-        working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: Test with coverage
+        shell: bash
         run: |
           dotnet test \
             --configuration Release \
             --no-build \
             --collect:"XPlat Code Coverage" \
-            --results-directory ./TestResults/
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+            --results-directory TestResults/ \
+            -- \
+            "CoverletOutputFormat=cobertura" \
+            "Threshold=${{ env.COVERLET_MIN_THRESHOLD }}" \
+            "ThresholdType=line"
 
-      - name: Upload coverage artifact for Sonar job
+      - name: Upload coverage artifact
+        # Faz o upload do relatório de cobertura gerado pela versão mais recente (LTS)
+        if: matrix.dotnet-version == '10.0.x'
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-for-sonar
-          path: '${{ env.WORKING_DIRECTORY }}/**/TestResults/**/coverage.cobertura.xml'
+          name: coverage-report-${{ runner.os }}-${{ matrix.dotnet-version }}
+          path: ${{ env.COVERAGE_RESULT_FILE }}
           if-no-files-found: error
 
-  sonar-analysis:
-    name: SonarCloud Analysis
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    if: github.event_name == 'pull_request'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
-      - name: Restore dependencies
-        run: dotnet restore
-        working-directory: ${{ env.WORKING_DIRECTORY }}
-
-      - name: Download coverage artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-for-sonar
-          path: ${{ env.WORKING_DIRECTORY }}/TestResults/
-
-      - name: 🔍 Verify downloaded coverage file
-        run: ls -R TestResults
-        working-directory: ${{ env.WORKING_DIRECTORY }}
-
-      - name: Cache SonarScanner
-        uses: actions/cache@v4
-        with:
-          path: ~/.dotnet/tools
-          key: ${{ runner.os }}-sonarscanner
-          restore-keys: ${{ runner.os }}-sonarscanner
-
-      - name: Install SonarScanner
-        run: dotnet tool install --global dotnet-sonarscanner
-
-      - name: Add tools to PATH
-        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-
-      - name: SonarCloud Begin
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          dotnet sonarscanner begin \
-            /k:"${{ vars.SONAR_PROJECT_KEY }}" \
-            /o:"${{ vars.SONAR_ORGANIZATION }}" \
-            /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.cobertura.reportsPaths="./TestResults/coverage.cobertura.xml"
-        working-directory: ${{ env.WORKING_DIRECTORY }}
-
-      - name: Build Solution (for analysis only )
-        run: dotnet build --no-restore
-        working-directory: ${{ env.WORKING_DIRECTORY }}
-
-      - name: SonarCloud End
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: dotnet sonarscanner end
-        working-directory: ${{ env.WORKING_DIRECTORY }}
