@@ -6,35 +6,29 @@ on:
   push:
     branches: [ main, develop ]
 
-# Permissões para ambos os jobs
 permissions:
   contents: read
-  pull-requests: write # Necessário para o Sonar
-  checks: write      # Necessário para o .NET CI
+  pull-requests: write
+  checks: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  # --- JOB 1: BUILD E TESTE ---
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # Vamos simplificar para um .NET só para acelerar, já que o Sonar só precisa de um relatório
-        dotnet-version: [ '10.0.x' ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # O Sonar precisa do histórico completo
+          fetch-depth: 0
 
-      - name: Setup .NET ${{ matrix.dotnet-version }}
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
+          dotnet-version: '10.0.x'
 
       - name: Cache NuGet packages
         uses: actions/cache@v4
@@ -50,6 +44,7 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
+      # --- PASSO DE TESTE CORRIGIDO E MAIS ROBUSTO ---
       - name: Test with coverage
         run: |
           dotnet test \
@@ -58,24 +53,28 @@ jobs:
             --collect:"XPlat Code Coverage" \
             --results-directory ./TestResults/ \
             -- \
-            "CoverletOutputFormat=opencover" # Só precisamos do formato do Sonar agora
+            "CoverletOutput=./TestResults/coverage.opencover.xml" \
+            "CoverletOutputFormat=opencover" \
+            "MergeWith=./TestResults/coverage.opencover.xml" # Garante que múltiplos projetos de teste sejam mesclados
+
+      # --- PASSO DE DIAGNÓSTICO PARA VERIFICAR A SAÍDA ---
+      - name: 🔍 Diagnostic - List generated files
+        run: ls -R ./TestResults
 
       - name: Upload coverage artifact for Sonar job
         uses: actions/upload-artifact@v4
         with:
           name: coverage-for-sonar
-          path: '**/TestResults/**/coverage.opencover.xml'
+          # Usando um caminho mais direto, já que forçamos a saída
+          path: ./TestResults/coverage.opencover.xml
           if-no-files-found: error
 
-  # --- JOB 2: ANÁLISE DO SONAR ---
+  # --- O JOB DO SONAR PERMANECE O MESMO ---
   sonar-analysis:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
-    # ESTA É A MÁGICA: Garante que este job só rode após o sucesso do job anterior
     needs: build-and-test
-    # Só executa a análise do Sonar em Pull Requests
     if: github.event_name == 'pull_request'
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
