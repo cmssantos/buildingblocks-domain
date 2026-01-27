@@ -1,18 +1,16 @@
+# A LINHA "name: .NET CI" FOI REMOVIDA DAQUI.
 name: PR Quality Gates
 
 on:
-  workflow_dispatch: # Mantido para execuções manuais
+  workflow_dispatch:
   workflow_run:
-    workflows: [".NET CI"]
+    workflows: [".NET CI"] # Agora isso vai funcionar, pois não há conflito de nomes.
     types: [completed]
-    # A SEÇÃO 'branches' FOI REMOVIDA DAQUI.
 
-# Permissões estão corretas.
 permissions:
   contents: read
   pull-requests: write
 
-# Concorrência está correta.
 concurrency:
   group: pr-${{ github.event.workflow_run.pull_requests[0].number }}
   cancel-in-progress: true
@@ -21,13 +19,10 @@ jobs:
   sonarcloud-analysis:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
-
-    # CONDIÇÃO 'IF' ATUALIZADA E MAIS ROBUSTA
-    # 1. Garante que o workflow anterior foi bem-sucedido.
-    # 2. Garante que o evento que acionou o workflow anterior foi um 'pull_request'.
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request' }}
 
     steps:
+      # O resto do seu arquivo está perfeito e não precisa de alterações.
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -42,7 +37,6 @@ jobs:
       - name: Download coverage artifact
         uses: actions/download-artifact@v4
         with:
-          # NOME DO ARTEFATO CORRIGIDO para corresponder ao que o .NET CI envia.
           name: coverage-for-sonar
           path: ./TestResults/
           run-id: ${{ github.event.workflow_run.id }}
@@ -68,7 +62,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          # Comando simplificado. O SonarScanner detecta os parâmetros de PR automaticamente.
           dotnet sonarscanner begin \
             /k:"${{ vars.SONAR_PROJECT_KEY }}" \
             /o:"${{ vars.SONAR_ORGANIZATION }}" \
@@ -82,8 +75,3 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: dotnet sonarscanner end
-
-      # O passo 'Mark PR status as success' foi removido.
-      # O SonarCloud deve ser o responsável por enviar o status final.
-      # Se ele não estiver enviando, o problema está na integração SonarCloud <-> GitHub,
-      # e mascarar isso com um status de sucesso manual esconde o problema real.
