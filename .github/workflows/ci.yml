@@ -77,6 +77,10 @@ jobs:
         run: |
             echo "ARTIFACT_NAME=coverage-pr-${{ github.event.pull_request.number || github.run_number }}" >> $GITHUB_ENV
 
+      - name: Set artifact name
+        run: |
+            echo "ARTIFACT_NAME=coverage-pr-${{ github.event.pull_request.number || github.run_number }}-${{ matrix.dotnet-version }}" >> $GITHUB_ENV
+
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
