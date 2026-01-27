@@ -11,9 +11,9 @@ public sealed class DomainExceptionTests
     [Fact]
     public void Constructor_ShouldExposeDomainError()
     {
-        var error = new DomainError("business.rule");
+        DomainError error = new DomainError("business.rule");
 
-        var exception = new DomainException(error);
+        DomainException exception = new DomainException(error);
 
         exception.Error.ShouldBe(error);
         exception.Message.ShouldBe("business.rule");

@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "publicReleaseRefSpec": [
+    "^refs/heads/main$"
+  ],
+  "prereleaseIdentifiers": {
+    "^refs/heads/develop$": "alpha",
+    "^refs/heads/release/": "rc"
+  },
+  "cloudBuild": {
+    "buildNumber": {
+      "enabled": true
+    }
+  }
+}

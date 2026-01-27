@@ -12,7 +12,7 @@ public sealed class Guard_String_Tests
     [Fact]
     public void AgainstNull_ShouldReturnValue_WhenNotNull()
     {
-        var value = Guard.AgainstNull("ok", TestDomainError.DummyError());
+        string value = Guard.AgainstNull("ok", TestDomainError.DummyError());
 
         value.ShouldBe("ok");
     }
@@ -24,7 +24,7 @@ public sealed class Guard_String_Tests
     [InlineData(" ")]
     public void AgainstNullOrEmpty_ShouldThrow_WhenInvalid(string? value)
     {
-        var error = new DomainError("string.empty");
+        DomainError error = new DomainError("string.empty");
 
         Action act = () =>
             Guard.AgainstNullOrEmpty(value, error);
@@ -37,7 +37,7 @@ public sealed class Guard_String_Tests
     [InlineData("valid")]
     public void AgainstNullOrEmpty_ShouldReturn_WhenValid(string value)
     {
-        var result = Guard.AgainstNullOrEmpty(value, TestDomainError.DummyError());
+        string result = Guard.AgainstNullOrEmpty(value, TestDomainError.DummyError());
 
         result.ShouldBe(value);
     }

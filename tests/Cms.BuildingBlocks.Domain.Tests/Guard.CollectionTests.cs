@@ -12,7 +12,7 @@ public sealed class Guard_Collection_Tests
     [Fact]
     public void AgainstEmpty_ShouldThrow_WhenCollectionIsEmpty()
     {
-        var error = new DomainError("collection.empty");
+        DomainError error = new DomainError("collection.empty");
 
         Action act = () =>
             Guard.AgainstEmpty(Array.Empty<int>(), error);
@@ -23,7 +23,7 @@ public sealed class Guard_Collection_Tests
     [Fact]
     public void AgainstEmpty_ShouldReturn_WhenCollectionHasItems()
     {
-        var items = new[] { 1 };
+        int[] items = new[] { 1 };
 
         IReadOnlyCollection<int> result = Guard.AgainstEmpty(items, TestDomainError.DummyError());
 

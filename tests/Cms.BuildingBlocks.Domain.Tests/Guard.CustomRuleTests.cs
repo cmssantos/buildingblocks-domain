@@ -12,7 +12,7 @@ public sealed class Guard_CustomRule_Tests
     [Fact]
     public void Against_WithCustomRule_ShouldThrow_WhenRuleIsTrue()
     {
-        var error = new DomainError("custom.rule.failed");
+        DomainError error = new DomainError("custom.rule.failed");
 
         Action act = () =>
             Guard.Against(
@@ -28,7 +28,7 @@ public sealed class Guard_CustomRule_Tests
     [Fact]
     public void Against_WithCustomRule_ShouldReturnValue_WhenRuleIsFalse()
     {
-        var result = Guard.Against(
+        int result = Guard.Against(
             10,
             v => v < 0,
             TestDomainError.DummyError(),

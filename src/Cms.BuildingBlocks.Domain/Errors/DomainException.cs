@@ -1,4 +1,4 @@
-﻿namespace Cms.BuildingBlocks.Domain.Errors;
+namespace Cms.BuildingBlocks.Domain.Errors;
 
 public sealed class DomainException(DomainError error)
   : Exception(error.Code)
