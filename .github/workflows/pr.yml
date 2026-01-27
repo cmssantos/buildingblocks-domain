@@ -5,14 +5,17 @@ on:
     workflows: [".NET CI"]
     types:
       - completed
-    branches:
-      - main
-      - develop
+    # REMOVIDA a seção 'branches' daqui para permitir que o gatilho dispare para PRs
 
 jobs:
   sonarcloud-analysis:
     name: SonarCloud Analysis
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event != 'push' }}
+
+    # CONDIÇÃO 'IF' ATUALIZADA E CORRIGIDA:
+    # 1. Garante que o workflow anterior foi bem-sucedido.
+    # 2. Garante que o evento que acionou o workflow anterior foi um 'pull_request'.
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request' }}
+
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -37,7 +40,7 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           path: ./TestResults/
 
-      - name: Diagnostic - Verify downloaded coverage file
+      - name: 🔍 Diagnostic - Verify downloaded coverage file
         run: ls -R ./TestResults
 
       - name: Cache SonarScanner
