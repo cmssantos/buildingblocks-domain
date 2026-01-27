@@ -51,39 +51,25 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: 🔍 Diagnostic - List project structure before test
-        run: |
-          echo "--- Estrutura de arquivos do projeto ---"
-          ls -R
-
       - name: Test with coverage
-        id: test_with_coverage # Dando um ID para o passo
         run: |
           dotnet test \
             --configuration Release \
             --no-build \
             --collect:"XPlat Code Coverage" \
             --results-directory ./TestResults/ \
-            --logger "trx;LogFileName=test-results.trx" \
             -- \
-            "CoverletOutput=./TestResults/coverage.cobertura.xml" \
             "CoverletOutputFormat=cobertura" \
-            "MergeWith=./TestResults/coverage.cobertura.xml" \
             "Threshold=${{ env.COVERLET_MIN_THRESHOLD }}" \
             "ThresholdType=line"
-        # REMOVEMOS o continue-on-error para ver a falha real, se houver.
-
-      - name: 🔍 Diagnostic - List generated files after test
-        # Este passo só roda se o passo de teste for bem-sucedido
-        if: success()
-        run: |
-          echo "--- Arquivos gerados após o teste ---"
-          ls -R
+            # Nota: Removi o CoverletOutput e MergeWith, pois o coletor gerencia isso.
+            # O importante é o coletor gerar o arquivo, e o upload encontrá-lo.
 
       - name: Upload coverage artifact
         if: matrix.dotnet-version == '10.0.x'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report-${{ runner.os }}-${{ matrix.dotnet-version }}
-          path: TestResults/coverage.cobertura.xml
+          # A correção final e robusta:
+          path: '**/TestResults/**/coverage.cobertura.xml'
           if-no-files-found: error
