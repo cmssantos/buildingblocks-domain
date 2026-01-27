@@ -2,7 +2,7 @@
   <ItemGroup>
     <!-- Test SDK -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-    <!-- xUnit v2 stack coerente -->
+    <!-- xUnit v3 stack coerente -->
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
