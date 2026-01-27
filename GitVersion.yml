@@ -4,7 +4,6 @@ next-version: 1.0.0
 branches:
   main:
     regex: ^main$
-    tag: ''
     increment: Patch
 
   develop:
@@ -16,20 +15,6 @@ branches:
     regex: ^feature[/-]
     tag: alpha
     increment: Minor
-    source-branches:
-      - develop
-
-  hotfix:
-    regex: ^hotfix[/-]
-    tag: beta
-    increment: Patch
-    source-branches:
-      - main
-
-  release:
-    regex: ^release[/-]
-    tag: rc
-    increment: None
     source-branches:
       - develop
 

@@ -35,12 +35,6 @@ jobs:
         with:
           versionSpec: '6.0.x'
 
-      - name: Branch Proof
-        run: |
-          echo "Ref: $GITHUB_REF"
-          echo "Ref Name: $GITHUB_REF_NAME"
-          git branch --show-current
-
       - name: Determine Version
         id: gitversion
         uses: gittools/actions/gitversion/execute@v3.1.11
@@ -52,15 +46,7 @@ jobs:
       - name: Guard GitVersion
         run: |
           if [ -z "${{ steps.gitversion.outputs.fullSemVer }}" ]; then
-            echo "❌ GitVersion failed — invalid branch config"
-            exit 1
-          fi
-
-      # 🛡️ Guard rail — falha cedo se GitVersion falhar
-      - name: Validate GitVersion output
-        run: |
-          if [ -z "${{ steps.gitversion.outputs.fullSemVer }}" ]; then
-            echo "GitVersion failed to calculate a version"
+            echo "❌ GitVersion failed"
             exit 1
           fi
 
