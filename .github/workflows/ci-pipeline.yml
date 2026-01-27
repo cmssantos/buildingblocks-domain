@@ -44,11 +44,60 @@ jobs:
       - name: Test
         run: dotnet test -c Release --no-build
 
-  # 2️⃣ Pre-release Pack for feature/hotfix
+  # 2️⃣
+  determine-version:
+    name: Determine Version
+    runs-on: ubuntu-latest
+    needs: build-test-formatting
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Install / Update NBGV
+      run: |
+        if ! dotnet tool list -g | grep nbgv; then
+          dotnet tool install --global nbgv
+        else
+          dotnet tool update --global nbgv
+        fi
+
+    - name: Get Version
+      id: get-version
+      run: |
+        echo "GITHUB_REF = $GITHUB_REF"
+
+        # Pega a versão base do version.json
+        BASE_VERSION=$(nbgv get-version /version)
+
+        # Determina o sufixo de acordo com o branch
+        if [[ $GITHUB_REF == refs/heads/feature/* ]]; then
+            VERSION="${BASE_VERSION}-alpha-feature.${GITHUB_RUN_NUMBER}"
+        elif [[ $GITHUB_REF == refs/heads/hotfix/* ]]; then
+            VERSION="${BASE_VERSION}-alpha-hotfix.${GITHUB_RUN_NUMBER}"
+        elif [[ $GITHUB_REF == refs/heads/develop ]]; then
+            VERSION="${BASE_VERSION}-alpha.${GITHUB_RUN_NUMBER}"
+        elif [[ $GITHUB_REF == refs/heads/release/* ]]; then
+            VERSION="${BASE_VERSION}-rc.${GITHUB_RUN_NUMBER}"
+        else
+            VERSION="$BASE_VERSION"
+        fi
+
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "Determined version: $VERSION"
+
+  # 3️⃣ Pre-release Pack for feature/hotfix
   pre-release-pack:
     name: Pre-release Pack (Alpha/Beta)
     runs-on: ubuntu-latest
-    needs: build-test-formatting
+    needs: determine-version
+
     if: |
       startsWith(github.ref, 'refs/heads/feature/') ||
       startsWith(github.ref, 'refs/heads/hotfix/')
@@ -69,7 +118,7 @@ jobs:
         run: dotnet build -c Release --no-restore
 
       - name: Pack Pre-release
-        run: dotnet pack -c Release --no-build --output ./artifacts
+        run: dotnet pack -c Release --no-build /p:Version=${{ env.VERSION }} --output ./artifacts
 
       - name: Push Pre-release to NuGet
         run: |
@@ -78,7 +127,7 @@ jobs:
             --source ${{ env.NUGET_FEED }} \
             --skip-duplicate
 
-# 3️⃣ SonarCloud (Pull Request only)
+  # 4️⃣ SonarCloud (Pull Request only)
   sonarcloud:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
@@ -137,11 +186,12 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
 
-  # 4️⃣ Pack & Publish to nuget.org  (develop, release/* and main only)
+  # 5 Pack & Publish to nuget.org  (develop, release/* and main only)
   pack-publish:
     name: Pack & Publish NuGet
     runs-on: ubuntu-latest
-    needs: build-test-formatting
+    needs: determine-version
+
     if: |
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/release/') ||
@@ -164,7 +214,7 @@ jobs:
 
       - name: Pack
         run: |
-          dotnet pack -c Release --no-build --output ./artifacts
+          dotnet pack -c Release --no-build /p:Version=${{ env.VERSION }} --output ./artifacts
 
       - name: Push to nuget.org
         env:
@@ -174,4 +224,3 @@ jobs:
             --source "https://api.nuget.org/v3/index.json" \
             --api-key $NUGET_API_KEY \
             --skip-duplicate
-
