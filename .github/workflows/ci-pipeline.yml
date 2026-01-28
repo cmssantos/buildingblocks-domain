@@ -75,14 +75,12 @@ jobs:
         run: |
             echo "GITHUB_REF = $GITHUB_REF"
 
-            # Pega a versão base do version.json usando o formato NuGet
             if [ -f version.json ]; then
-            BASE_VERSION=$(nbgv get-version --format NuGet 2>/dev/null || echo "2.0.0")
+                BASE_VERSION=$(nbgv get-version --format NuGet 2>/dev/null || echo "2.0.0")
             else
-            BASE_VERSION="2.0.0"
+                BASE_VERSION="2.0.0"
             fi
 
-            # Determina o sufixo de acordo com o branch
             if [[ $GITHUB_REF == refs/heads/feature/* ]]; then
                 VERSION="${BASE_VERSION}-alpha-feature.${GITHUB_RUN_NUMBER}"
             elif [[ $GITHUB_REF == refs/heads/hotfix/* ]]; then

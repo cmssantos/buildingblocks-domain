@@ -2,7 +2,7 @@
 
 Pure **Domain Building Blocks** for .NET applications using **DDD**, **Clean Architecture**, and **SOLID**.
 
-![NuGet](https://img.shields.io/nuget/v/Cms.BuildingBlocks.Domain)
+![NuGet](https://img.shields.io/nuget/vpre/Cms.BuildingBlocks.Domain)
 ![Downloads](https://img.shields.io/nuget/dt/Cms.BuildingBlocks.Domain)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
