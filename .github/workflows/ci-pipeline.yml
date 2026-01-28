@@ -129,6 +129,7 @@ jobs:
           dotnet pack -c Release --no-build \
           /p:Version=${{ needs.determine-version.outputs.version }} \
           /p:PackageVersion=${{ needs.determine-version.outputs.version }} \
+          /p:DeterministicVersion=false \
           /p:IncludeSymbols=true \
           --output ./artifacts
 
@@ -229,6 +230,7 @@ jobs:
           dotnet pack -c Release --no-build \
           /p:Version=${{ needs.determine-version.outputs.version }} \
           /p:PackageVersion=${{ needs.determine-version.outputs.version }} \
+          /p:DeterministicVersion=false \
           /p:IncludeSymbols=true \
           --output ./artifacts
 
