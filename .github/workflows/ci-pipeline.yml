@@ -126,7 +126,11 @@ jobs:
 
       - name: Pack
         run: |
-          dotnet pack -c Release --no-build /p:PackageVersion=${{ needs.determine-version.outputs.version }} --output ./artifacts
+          dotnet pack -c Release --no-build \
+          /p:Version=${{ needs.determine-version.outputs.version }} \
+          /p:PackageVersion=${{ needs.determine-version.outputs.version }} \
+          /p:IncludeSymbols=true \
+          --output ./artifacts
 
       - name: Push Pre-release to NuGet
         run: |
@@ -222,7 +226,11 @@ jobs:
 
       - name: Pack
         run: |
-          dotnet pack -c Release --no-build /p:PackageVersion=${{ needs.determine-version.outputs.version }} --output ./artifacts
+          dotnet pack -c Release --no-build \
+          /p:Version=${{ needs.determine-version.outputs.version }} \
+          /p:PackageVersion=${{ needs.determine-version.outputs.version }} \
+          /p:IncludeSymbols=true \
+          --output ./artifacts
 
       - name: Push to nuget.org
         env:
