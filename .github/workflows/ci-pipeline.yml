@@ -73,9 +73,9 @@ jobs:
         run: |
             echo "GITHUB_REF = $GITHUB_REF"
 
-            # Pega a versão base do version.json
+            # Pega a versão base do version.json usando o formato NuGet
             if [ -f version.json ]; then
-            BASE_VERSION=$(nbgv get-version 2>/dev/null || echo "2.0.0")
+            BASE_VERSION=$(nbgv get-version --format NuGet 2>/dev/null || echo "2.0.0")
             else
             BASE_VERSION="2.0.0"
             fi
@@ -95,6 +95,7 @@ jobs:
 
             echo "VERSION=$VERSION" >> $GITHUB_ENV
             echo "Determined version: $VERSION"
+
 
   # 3️⃣ Pre-release Pack for feature/hotfix
   pre-release-pack:
