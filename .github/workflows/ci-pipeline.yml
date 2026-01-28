@@ -127,15 +127,15 @@ jobs:
       - name: Pack
         run: |
           dotnet pack -c Release --no-build \
-            /p:Version=${{ needs.determine-version.outputs.version }} \
-            /p:PackageVersion=${{ needs.determine-version.outputs.version }} \
-            /p:DeterministicVersion=false \
-            /p:GenerateAssemblyInfo=false \
-            /p:AssemblyVersion=${{ needs.determine-version.outputs.version }} \
-            /p:FileVersion=${{ needs.determine-version.outputs.version }} \
-            /p:InformationalVersion=${{ needs.determine-version.outputs.version }} \
-            /p:IncludeSymbols=true \
-            --output ./artifacts
+          /p:Version=${{ needs.determine-version.outputs.version }} \
+          /p:PackageVersion=${{ needs.determine-version.outputs.version }} \
+          /p:AssemblyVersion=${{ needs.determine-version.outputs.version }} \
+          /p:FileVersion=${{ needs.determine-version.outputs.version }} \
+          /p:InformationalVersion=${{ needs.determine-version.outputs.version }} \
+          /p:GenerateAssemblyInfo=false \
+          /p:DeterministicVersion=false \
+          /p:UseGitVersioning=false \
+          --output ./artifacts
 
       - name: Push Pre-release to NuGet
         run: |
@@ -232,15 +232,15 @@ jobs:
       - name: Pack
         run: |
           dotnet pack -c Release --no-build \
-            /p:Version=${{ needs.determine-version.outputs.version }} \
-            /p:PackageVersion=${{ needs.determine-version.outputs.version }} \
-            /p:DeterministicVersion=false \
-            /p:GenerateAssemblyInfo=false \
-            /p:AssemblyVersion=${{ needs.determine-version.outputs.version }} \
-            /p:FileVersion=${{ needs.determine-version.outputs.version }} \
-            /p:InformationalVersion=${{ needs.determine-version.outputs.version }} \
-            /p:IncludeSymbols=true \
-            --output ./artifacts
+          /p:Version=${{ needs.determine-version.outputs.version }} \
+          /p:PackageVersion=${{ needs.determine-version.outputs.version }} \
+          /p:AssemblyVersion=${{ needs.determine-version.outputs.version }} \
+          /p:FileVersion=${{ needs.determine-version.outputs.version }} \
+          /p:InformationalVersion=${{ needs.determine-version.outputs.version }} \
+          /p:GenerateAssemblyInfo=false \
+          /p:DeterministicVersion=false \
+          /p:UseGitVersioning=false \
+          --output ./artifacts
 
       - name: Push to nuget.org
         env:
