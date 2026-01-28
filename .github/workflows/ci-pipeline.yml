@@ -96,6 +96,9 @@ jobs:
             echo "VERSION=$VERSION" >> $GITHUB_ENV
             echo "Determined version: $VERSION"
 
+            # exporta como output do step
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+
 
   # 3️⃣ Pre-release Pack for feature/hotfix
   pre-release-pack:
@@ -122,8 +125,9 @@ jobs:
       - name: Build
         run: dotnet build -c Release --no-restore
 
-      - name: Pack Pre-release
-        run: dotnet pack -c Release --no-build /p:Version=${{ env.VERSION }} --output ./artifacts
+      - name: Pack
+        run: |
+          dotnet pack -c Release --no-build /p:Version=${{ needs.determine-version.outputs.version }} --output ./artifacts
 
       - name: Push Pre-release to NuGet
         run: |
@@ -219,7 +223,7 @@ jobs:
 
       - name: Pack
         run: |
-          dotnet pack -c Release --no-build /p:Version=${{ env.VERSION }} --output ./artifacts
+          dotnet pack -c Release --no-build /p:Version=${{ needs.determine-version.outputs.version }} --output ./artifacts
 
       - name: Push to nuget.org
         env:
