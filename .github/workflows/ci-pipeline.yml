@@ -122,14 +122,17 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: |
-            dotnet build -c Release --no-restore \
-            /p:PackageVersion=${{ needs.determine-version.outputs.version }}
+        env:
+          VERSION: ${{ needs.determine-version.outputs.version }}
+        run: dotnet build -c Release --no-restore
 
       - name: Pack
+        env:
+          VERSION: ${{ needs.determine-version.outputs.version }}
         run: |
-            dotnet pack -c Release --no-build \
-            --output ./artifacts
+          dotnet pack -c Release --no-build \
+          /p:IncludeSymbols=true \
+          --output ./artifacts
 
       - name: Push Pre-release to NuGet
         run: |
@@ -221,14 +224,17 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: |
-            dotnet build -c Release --no-restore \
-            /p:PackageVersion=${{ needs.determine-version.outputs.version }}
+        env:
+          VERSION: ${{ needs.determine-version.outputs.version }}
+        run: dotnet build -c Release --no-restore
 
       - name: Pack
+        env:
+          VERSION: ${{ needs.determine-version.outputs.version }}
         run: |
-            dotnet pack -c Release --no-build \
-            --output ./artifacts
+          dotnet pack -c Release --no-build \
+          /p:IncludeSymbols=true \
+          --output ./artifacts
 
       - name: Push to nuget.org
         env:

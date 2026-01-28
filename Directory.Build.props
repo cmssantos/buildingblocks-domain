@@ -31,13 +31,24 @@
     </ExcludeFromCoverage>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!-- Versionamento dinâmico via GitHub Actions -->
-    <Version>$(VERSION)</Version>
-    <PackageVersion>$(VERSION)</PackageVersion>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>$(VERSION)</FileVersion>
-  </PropertyGroup>
+  <!-- Custom target to override NBGV version with CI-provided VERSION -->
+  <Target Name="OverrideNBGVVersion" AfterTargets="GetBuildVersion">
+    <PropertyGroup>
+      <!-- Read VERSION from environment variable -->
+      <CustomVersion Condition="'$(CustomVersion)' == ''">$([System.Environment]::GetEnvironmentVariable('VERSION'))</CustomVersion>
+    </PropertyGroup>
+
+    <!-- Only override if VERSION environment variable is set -->
+    <PropertyGroup Condition="'$(CustomVersion)' != ''">
+      <PackageVersion>$(CustomVersion)</PackageVersion>
+      <Version>$(CustomVersion)</Version>
+      <NuGetPackageVersion>$(CustomVersion)</NuGetPackageVersion>
+      <FileVersion>$(CustomVersion)</FileVersion>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="Custom VERSION from environment: $(CustomVersion)" Condition="'$(CustomVersion)' != ''" />
+    <Message Importance="high" Text="Using NBGV version (no VERSION env var set)" Condition="'$(CustomVersion)' == ''" />
+  </Target>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Optimize>true</Optimize>
